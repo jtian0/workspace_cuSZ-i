@@ -1,0 +1,15 @@
+[submodule "cusz-interp"]
+	path = cusz-interp
+	url = https://github.com/JLiu-1/cusz-I.git
+[submodule "fzgpu"]
+	path = fzgpu
+	url = https://github.com/szcompressor/FZ-GPU.git
+[submodule "SZx"]
+	path = szx-cuda
+	url = https://github.com/szcompressor/SZx
+[submodule "cuszp"]
+	path = cuszp
+	url = https://github.com/szcompressor/cuSZp.git
+[submodule "cuzfp"]
+	path = zfp-cuda
+	url = https://github.com/LLNL/zfp.git
