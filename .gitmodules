@@ -13,3 +13,6 @@
 [submodule "cuzfp"]
 	path = zfp-cuda
 	url = https://github.com/LLNL/zfp.git
+[submodule "qcat"]
+	path = analyzer
+	url = https://github.com/szcompressor/qcat.git
