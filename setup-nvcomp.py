@@ -5,8 +5,11 @@ import os
 def setup(ver_cuda="12"):
     print(f"Setting up for CUDA {ver_cuda}...")
 
-    ver_nvcomp = "3.0.5"
-    ver_nvcomp_ = ver_nvcomp.replace(".", "")
+    # ver_nvcomp = "3.0.5"
+    ver_nvcomp = os.environ.get('NVCOMP_VER')
+
+    if not ver_nvcomp:
+        raise ValueError("There is no NVCOMP_VER set in shell.")
 
     nvcomp_dir = f"nvcomp{ver_nvcomp}-cuda{ver_cuda}"
     nvcomp_tgz = f"nvcomp_{ver_nvcomp}_x86_64_{ver_cuda}.x.tgz"

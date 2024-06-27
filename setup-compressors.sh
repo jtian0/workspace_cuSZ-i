@@ -33,9 +33,3 @@ cmake -S zfp-cuda -B zfp-cuda/build \
     -D CMAKE_CUDA_ARCHITECTURES="75;80;86" \
     -D CMAKE_BUILD_TYPE=Release 
 cmake --build zfp-cuda/build -- -j
-
-export PATH=$(pwd)/cusz-interp/build:$PATH
-export PATH=$(pwd)/fzgpu:$PATH
-export PATH=$(pwd)/cuszp/build/examples/bin:$PATH
-export PATH=$(pwd)/szx-cuda/build:$PATH
-export PATH=$(pwd)/zfp-cuda/build:$PATH
