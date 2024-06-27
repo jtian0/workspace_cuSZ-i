@@ -21,18 +21,26 @@ else
     exit 1
 fi
 
+export NVCOMP_VER="3.0.5"
+NVCOMP_DIR11="nvcomp${NVCOMP_VER}-cuda11"
+NVCOMP_DIR12="nvcomp${NVCOMP_VER}-cuda12"
+
 export PATH=$(pwd)/cusz-interp/build:$PATH
 export PATH=$(pwd)/fzgpu:$PATH
 export PATH=$(pwd)/cuszp/build/examples/bin:$PATH
 export PATH=$(pwd)/szx-cuda/build:$PATH
+export PATH=$(pwd)/szx-cuda/build/example:$PATH
 export PATH=$(pwd)/zfp-cuda/build:$PATH
+export PATH=$(pwd)/zfp-cuda/build/bin:$PATH
+
+## for bitcomp_example
+export PATH=$(pwd):$PATH
+## for benchmark_bitcomp_chunked
+export PATH=$(pwd)/nvcomp${NVCOMP_VER}-cuda$1/bin:$PATH
 
 export PATH=$(pwd)/analyzer/build/examples:$PATH
 export LD_LIBRARY_PATH=$(pwd)/analyzer/build/qcat:$LD_LIBRARY_PATH
 
-export NVCOMP_VER="3.0.5"
-NVCOMP_DIR11="nvcomp${NVCOMP_VER}-cuda11"
-NVCOMP_DIR12="nvcomp${NVCOMP_VER}-cuda12"
 
 export LD_LIBRARY_PATH=$(pwd)/${NVCOMP_DIR11}/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$(pwd)/${NVCOMP_DIR12}/lib:$LD_LIBRARY_PATH
