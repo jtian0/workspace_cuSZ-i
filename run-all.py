@@ -22,7 +22,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
     
     if cmp == "FZGPU":
         cmd = [
-                    ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "FZ-GPU/fz-gpu"),
+                    ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "fz-gpu",
                     data_path, 
                     data_size[0], 
                     data_size[1], 
@@ -32,7 +32,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     ["compareData",
                     "-f",  data_path, data_path+'.fzgpux',]]
     elif cmp == "cuSZ":
-        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "cusz-canary/build/cusz"), 
+        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "cuszi", 
                     "-t", "f32",
                     "-m", "r2r",
                     "-i", data_path,
@@ -42,7 +42,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "--predictor", "lorenzo",
                     "--report", "time,cr",
                     "-a", "0",],
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "cusz-canary/build/cusz"), 
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
                     "--report", "time",
@@ -51,13 +51,13 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-f",  data_path, data_path+'.cuszx',]]
     elif cmp == "cuSZp":
         cmd = [
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "cuSZp/build/examples/bin/cuSZp_gpu_f32_api"),
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "cuSZp_gpu_f32_api",
                     data_path,
                     "REL", error_bound,],
                 ["compareData",
                     "-f",  data_path, data_path+'.cuszpx',]]
     elif cmp == "cuzfp":
-        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + bit_rate, os.path.join( work_path, "zfp/build/bin/zfp"),
+        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + bit_rate, "zfp",
                     "-i", data_path,
                     "-z", data_path+'.cuzfpa',
                     "-x", "cuda",
@@ -67,7 +67,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     data_size[1], 
                     data_size[2], 
                     "-r", bit_rate],
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + bit_rate, os.path.join( work_path, "zfp/build/bin/zfp"),
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + bit_rate, "zfp",
                     "-z", data_path+'.cuzfpa',
                     "-o", data_path+'.cuzfpx',
                     "-x", "cuda",
@@ -81,16 +81,16 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                 ["compareData",
                     "-f",  data_path, data_path+'.cuzfpx',],]
     elif cmp == "cuSZx":
-        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "SZx-main/SZx-main/build/example/szx_testfloat_compress_fastmode2"),
+        cmd = [["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "szx_testfloat_compress_fastmode2",
                     data_path, f"{cuszx_block_size}", error_bound, "--cuda"],
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "SZx-main/SZx-main/build/example/szx_testfloat_decompress_fastmode2"),
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "szx_testfloat_decompress_fastmode2",
                     data_path+".szx", f"{nbEle}", "--cuda"],
                 ["compareData",
                     "-f",  data_path, data_path+'.szx.out',],
         ]
     elif cmp == "cuSZi":
         cmd = [
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "cusz-canary/build/cusz"), 
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "cuszi", 
                     "-t", "f32",
                     "-m", "r2r",
                     "-i", data_path,
@@ -100,7 +100,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-a", "2",
                     "--predictor", "spline3",
                     "--report", "time,cr"],
-                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "cusz-canary/build/cusz"), 
+                ["nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
                     "--report", "time",
@@ -109,11 +109,11 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-f",  data_path, data_path+'.cuszx',]
                 ]
     cmd_nvcomp = [
-        "nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "nvcomp/bin/benchmark_bitcomp_chunked"),
+        "nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "benchmark_bitcomp_chunked",
         "-f", data_path, "-a", "0"
     ]
     cmd_bitcomp = [
-        "nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, os.path.join( work_path, "bitcomp_lossless_example/bitcomp_example"),
+        "nsys", "profile", "--stats=true", "-o", "nsys_result_" + error_bound, "bitcomp_example",
         "-r", data_path,
     ]
     
