@@ -30,6 +30,6 @@ nvcc -L{proj_dir}/{nvcomp_dir}/lib -I{proj_dir}/{nvcomp_dir}/include/ bitcomp_ex
 if __name__ == "__main__":
     #print(len(sys.argv))
     if len(sys.argv) < 2:
-        print("help: `python setup.py 12` for CUDA 12, or `11` in place of the last argument for CUDA 11.")
+        print("help: `python setup-nvcomp.py 12` for CUDA 12, or `11` in place of the last argument for CUDA 11.")
     else:
         setup(sys.argv[-1])
