@@ -8,17 +8,11 @@ URL_MIRANDA=https://g-8d6b0.fd635.8443.data.globus.org/ds131.2/Data-Reduction-Re
 URL_S3D=https://g-8d6b0.fd635.8443.data.globus.org/ds131.2/Data-Reduction-Repo/raw-data/S3D/SDRBENCH-S3D.tar.gz
 
 if [ $# -eq 1 ]; then
-    echo "setting data dir root to $1"
-elif [ $# -eq 2 ]; then
-    echo "setting data dir root to $1"
-    if [[ "$2" = "purgesoftlink" ]]; then
+    if [[ "$1" = "purgesoftlink" ]]; then
         echo "purging soft/symbolic links..."
         rm -f SDRBENCH-QMCPack 
         exit 0
     fi
-else
-    echo "bash setup-data.sh [root dir to put data] [optional: purgesoftlink]"
-    exit 1
 fi
 
 RED='\033[0;31m'
@@ -26,7 +20,6 @@ GRAY='\033[0;37m'
 NOCOLOR='\033[0m'
 BOLDRED='\033[1;31m'
 
-export DATAPATH=$1
 mkdir -p ${DATAPATH}
 pushd $DATAPATH
 
