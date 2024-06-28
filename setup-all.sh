@@ -14,7 +14,7 @@ if [ $# -eq 1 ]; then
         echo "specified CUDA version $1."
     fi
 else
-    echo "sh setup-all.sh [OPTION]"
+    echo "bash setup-all.sh [OPTION]"
     echo "  * \"purge\"  to reset this workspace"
     echo "  * \"11\"     to initialize the artifacts for CUDA 11"
     echo "  * \"12\"     to initialize the artifacts for CUDA 12"
