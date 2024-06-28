@@ -1,5 +1,10 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+BOLDRED='\033[1;31m' 
+GRAY='\033[0;37m'
+NOCOLOR='\033[0m'
+
 if [ $# -eq 1 ]; then
     if [[ "$1" = "purge" ]]; then
         echo "purging build files..."
@@ -11,7 +16,7 @@ if [ $# -eq 1 ]; then
             zfp-cuda/build \
         exit 0
     else
-        echo "specified CUDA version $1."
+        echo -e "\n${BOLDRED}specified CUDA version $1.${NOCOLOR}"
     fi
 else
     echo "bash setup-all.sh [OPTION]"
