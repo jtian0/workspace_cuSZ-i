@@ -52,7 +52,7 @@ We require NVIDIA A100 GPU (40-GB, i.e., the common variant) to cover the essent
   - e.g., CentOS 7 onward, Ubuntu 22.04.
 - We require CUDA SDK of version 11.4 onward but lower than 12.5 (i.e., 11.4 to 12.4, inclusively).
   - corresponding to CUDA driver of version 470 onward.
-  - The profiler (Nsight Systems) has not yet supported the latest 12.5 as of June 2024.
+  - CUDA 12.5 was tested not compatible.
 - We require C++17-compliant host compiler.
   - e.g., GCC 9.3 onward.
 - We require a modern cmake build system.
@@ -69,12 +69,12 @@ The details are folded here.
 </summary>
 
 - JHTDB 
-  - Though hosted on \url{https://turbulence.pha.jhu.edu/} as open data, it requires a token to access the data, which prohibits us from automating the data preprocessing. Thus, we don't include JHTDB datafields for the artifacts.
+  - Though hosted on https://turbulence.pha.jhu.edu/ as open data, it requires a token to access the data, which prohibits us from automating the data preprocessing. Thus, we don't include JHTDB datafields for the artifacts.
 - Miranda, Nyx, QMCPack, S3D 
   - hosted on https://sdrbench.github.io
 - RTM data are from proprietary simulations
   - which are not open to the public.
-  - We exclude the use of \datasetname{RTM} in this artifact.
+  - We exclude the use of RTM in this artifact.
 
 </details>  
 
@@ -104,6 +104,9 @@ https://github.com/spack/spack.git
 ## For other shells, please refer to the
 ## instruction by typing (quotes not included)
 ## "$HOME/spack/bin/spack load"
+spack compiler find
+spack install gcc@9.3.0
+spack install cuda@12.4.1%gcc@9.3.0
 ```
 
 </details>
@@ -120,21 +123,24 @@ cd sc24cuszi
 
 ## (2) setup
 ## If you use CUDA 11
-source setup-all.sh 11
+source setup-all.sh 11 <WHERE_TO_PUT_DATA_DIRS>
 ## If you use CUDA 12
-# source setup-all.sh 12
+# source setup-all.sh 12 <WHERE_TO_PUT_DATA_DIRS>
 
-## (!!) reset the workspace without removing data
+## (!!) clear build cache without removing data
 bash setup-all.sh purge
 
-## (3) prepare the data reset the workspace
-bash setup-data.sh <WHERE_TO_PUT_DATA_DIR>
-## e.g., /scratch/username
+## (3) prepare the data
+bash setup-data.sh
 ```
 
 ## Artifact Execution
 
-TBD
+```bash
+cd $WORKSPACE
+python script_data_collection.py  --input  <INPUT DATA DIR> --output <OUTPUT DATA DIR> --dims [x] [y] [z]
+```
+
 
 ## Artifact Analysis
 
