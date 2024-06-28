@@ -30,6 +30,8 @@ export NVCOMP_VER="3.0.5"
 NVCOMP_DIR11="nvcomp${NVCOMP_VER}-cuda11"
 NVCOMP_DIR12="nvcomp${NVCOMP_VER}-cuda12"
 
+export WORKSPACE=$(pwd)
+
 export PATH=$(pwd)/cusz-interp/build:$PATH
 export PATH=$(pwd)/fzgpu:$PATH
 export PATH=$(pwd)/cuszp/build/examples/bin:$PATH
