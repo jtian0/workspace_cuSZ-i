@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 
 def setup(ver_cuda="12"):
-    print(f"Setting up for CUDA {ver_cuda}...")
+    print(f"\n\033[1;31msetting up NVCOMP for CUDA {ver_cuda}...\n")
 
     # ver_nvcomp = "3.0.5"
     ver_nvcomp = os.environ.get('NVCOMP_VER')
