@@ -242,13 +242,13 @@ def run_cuzfp(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', '-i', help="(MANDATORY) input data folder", type=str)
-    parser.add_argument('--output', '-o', help="(MANDATORY) output data folder", type=str)
-    parser.add_argument('--dim', '-d', type=int,default=3)
-    parser.add_argument('--dims', '-m', help="(MANDATORY) data dimension",  type=str,nargs="+")
-    parser.add_argument('--cmp', '-c', '--compressor', help="(there is fallback) specify a list of compressors", type=str,nargs="*")
-    parser.add_argument('--eb', '-e', help="(there is fallback) specify a list of error bounds", type=str,nargs="*")
-    parser.add_argument('--br', '-b', help="(there is fallback) specify a list of bit rates", type=str,nargs="*")
-    parser.add_argument('--nsys', '-n', help="(there is fallback) specify nsys profile result dir", type=str, default="./nsys_results/")
+    parser.add_argument('--output', '-o', help="(MANDATORY) output folder for logs", type=str)
+    parser.add_argument('--dim', '-d', help="data dimension", type=int,default=3)
+    parser.add_argument('--dims', '-m', help="(MANDATORY) data dimension", type=str,nargs="+")
+    parser.add_argument('--cmp', '-c', '--compressors', help="specify a list of compressors", type=str,nargs="*")
+    parser.add_argument('--eb', '-e', help="specify a list of error bounds", type=str,nargs="*")
+    parser.add_argument('--br', '-b', help="specify a list of bit rates", type=str,nargs="*")
+    parser.add_argument('--nsys', '-n', help="specify nsys profile result dir", type=str, default="./nsys_results/")
     args = parser.parse_args()
     
     datafolder   = args.input
@@ -267,13 +267,10 @@ if __name__ == '__main__':
         sys.exit(1)
     
     
-    # method_list = ['FZGPU', 'cuSZ', 'cuSZp', 'cuzfp', 'cuSZx', 'cuSZi']
-    method_list = ['cuSZi', 'cuzfp']
-    # error_bound_list = ['1e-2', '5e-3', '1e-3','5e-4', '1e-4', '5e-5', '1e-5']
-    error_bound_list = ['5e-3', '1e-3'] ## only for testing
-    # bit_rate_list = ['0.5', '1', '2', '4', '6', '8', '12', '16']
-    bit_rate_list = ['2', '4']   ## only for testing
-    run_func_dict = {"FZGPU":run_FZGPU, "cuSZ":run_cuSZ, "cuSZp":run_cuSZp, "cuSZx":run_cuSZx, "cuzfp":run_cuzfp, "cuSZi":run_cuSZ,}
+    method_list = ['FZGPU', 'cuSZ', 'cuSZp', 'cuzfp', 'cuSZx', 'cuSZi']
+    error_bound_list = ['1e-2', '5e-3', '1e-3','5e-4', '1e-4', '5e-5', '1e-5']
+    bit_rate_list = ['0.5', '1', '2', '4', '6', '8', '12', '16']
+    run_func_dict = {"FZGPU":run_FZGPU, "cuSZ":run_cuSZ, "cuSZp":run_cuSZp, "cuSZx":run_cuSZx, "cuzfp":run_cuzfp, "cuZFP":run_cuzfp , "cuSZi":run_cuSZ,}
     
     cmp_list = method_list      if cmp_list is None else cmp_list
     eb_list  = error_bound_list if eb_list is None else eb_list
