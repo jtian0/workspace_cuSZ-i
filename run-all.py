@@ -245,7 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', '-o', help="(MANDATORY) output folder for logs", type=str)
     parser.add_argument('--dim', '-d', help="data dimension", type=int,default=3)
     parser.add_argument('--dims', '-m', help="(MANDATORY) data dimension", type=str,nargs="+")
-    parser.add_argument('--cmp', '-c', '--compressors', help="specify a list of compressors", type=str,nargs="*")
+    parser.add_argument('--cmp', '-c', help="specify a list of compressors", type=str,nargs="*")
     parser.add_argument('--eb', '-e', help="specify a list of error bounds", type=str,nargs="*")
     parser.add_argument('--br', '-b', help="specify a list of bit rates", type=str,nargs="*")
     parser.add_argument('--nsys', '-n', help="specify nsys profile result dir", type=str, default="./nsys_results/")
