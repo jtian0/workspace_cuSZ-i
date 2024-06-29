@@ -42,13 +42,14 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-l", f"{data_size[0]}x{data_size[1]}x{data_size[2]}",
                     "-z", 
                     "--predictor", "lorenzo",
-                    "--report", "time,cr",
+                    # "--report", "time,cr",
                     "-a", "0",],
                 ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
-                    "--report", "time",
-                    "--compare", data_path,],
+                    # "--report", "time",
+                    # "--compare", data_path,
+                    ],
                 ["compareData",
                     "-f",  data_path, data_path+'.cuszx',],
                 ["rm",
@@ -111,12 +112,14 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-z", 
                     "-a", "2",
                     "--predictor", "spline3",
-                    "--report", "time,cr"],
+                    # "--report", "time,cr"
+                    ],
                 ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
-                    "--report", "time",
-                    "--compare", data_path,],
+                    # "--report", "time",
+                    # "--compare", data_path,
+                    ],
                 ["compareData",
                     "-f",  data_path, data_path+'.cuszx',],
                 ["rm",
@@ -238,14 +241,14 @@ def run_cuzfp(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', '-i', type=str)
-    parser.add_argument('--output', '-o', type=str)
+    parser.add_argument('--input', '-i', help="(MANDATORY) input data folder", type=str)
+    parser.add_argument('--output', '-o', help="(MANDATORY) output data folder", type=str)
     parser.add_argument('--dim', '-d', type=int,default=3)
-    parser.add_argument('--dims', '-m', type=str,nargs="+")
-    parser.add_argument('--cmp', '-c', type=str,nargs="*")
-    parser.add_argument('--eb', '-e', type=str,nargs="*")
-    parser.add_argument('--br', '-b', type=str,nargs="*")
-    parser.add_argument('--nsys', '-n', type=str, default="./nsys_results/")
+    parser.add_argument('--dims', '-m', help="(MANDATORY) data dimension",  type=str,nargs="+")
+    parser.add_argument('--cmp', '-c', '--compressor', help="(there is fallback) specify a list of compressors", type=str,nargs="*")
+    parser.add_argument('--eb', '-e', help="(there is fallback) specify a list of error bounds", type=str,nargs="*")
+    parser.add_argument('--br', '-b', help="(there is fallback) specify a list of bit rates", type=str,nargs="*")
+    parser.add_argument('--nsys', '-n', help="(there is fallback) specify nsys profile result dir", type=str, default="./nsys_results/")
     args = parser.parse_args()
     
     datafolder   = args.input
@@ -255,11 +258,21 @@ if __name__ == '__main__':
     eb_list      = args.eb
     br_list      = args.br
     nsys_result_path         = args.nsys
+
+    if any(e is None for e in [args.input, args.output, args.dims]):
+        print()
+        print("need to specify MANDATORY arguments")
+        print()
+        parser.print_help()
+        sys.exit(1)
     
     
-    method_list = ['FZGPU', 'cuSZ', 'cuSZp', 'cuzfp', 'cuSZx', 'cuSZi']
-    error_bound_list = ['1e-2', '5e-3', '1e-3','5e-4', '1e-4', '5e-5', '1e-5']
-    bit_rate_list = ['0.5', '1', '2', '4', '6', '8', '12', '16']
+    # method_list = ['FZGPU', 'cuSZ', 'cuSZp', 'cuzfp', 'cuSZx', 'cuSZi']
+    method_list = ['cuSZi', 'cuzfp']
+    # error_bound_list = ['1e-2', '5e-3', '1e-3','5e-4', '1e-4', '5e-5', '1e-5']
+    error_bound_list = ['5e-3', '1e-3'] ## only for testing
+    # bit_rate_list = ['0.5', '1', '2', '4', '6', '8', '12', '16']
+    bit_rate_list = ['2', '4']   ## only for testing
     run_func_dict = {"FZGPU":run_FZGPU, "cuSZ":run_cuSZ, "cuSZp":run_cuSZp, "cuSZx":run_cuSZx, "cuzfp":run_cuzfp, "cuSZi":run_cuSZ,}
     
     cmp_list = method_list      if cmp_list is None else cmp_list
@@ -275,7 +288,8 @@ if __name__ == '__main__':
     
     if not os.path.exists(nsys_result_path):
         os.makedirs(nsys_result_path)
-    
+        
+    echo_cmd = lambda cmd: print("    ", " ".join(cmd))
     
     for cmp in cmp_list:    
         if cmp != 'cuzfp':
@@ -284,6 +298,9 @@ if __name__ == '__main__':
                     data_path = os.path.join(datafolder, file)
                     file_path = os.path.join(outputfolder, file)
                     cmd, cmd_nvcomp, cmd_bitcomp = update_command(cmp, data_path, data_size, error_bound=eb, nsys_result_path=nsys_result_path)
+                    for i in cmd: 
+                        echo_cmd(i)
+                    echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
                     run_func_dict[cmp](cmd, cmd_nvcomp, cmd_bitcomp, file_path + "_eb=" + eb + "_" + cmp)
                 
                     
@@ -294,4 +311,7 @@ if __name__ == '__main__':
                     data_path = os.path.join(datafolder, file)
                     file_path = os.path.join(outputfolder, file)
                     cmd, cmd_nvcomp, cmd_bitcomp = update_command(cmp, data_path, data_size, bit_rate=br, nsys_result_path=nsys_result_path)
+                    for i in cmd: 
+                        echo_cmd(i)
+                    echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
                     run_func_dict[cmp](cmd, cmd_nvcomp, cmd_bitcomp, file_path + "_br=" + br + "_" + cmp)
