@@ -51,8 +51,8 @@ elif [ $# -eq 1 ]; then
     fi
 elif [ $# -eq 2 ]; then 
     echo -e "\n${BOLDRED}specified CUDA version $1${NOCOLOR}"
-    sh setup-compressors.sh
-    sh setup-analyzer.sh
+    bash setup-compressors.sh
+    bash setup-analyzer.sh
     python setup-nvcomp.py $1
 
     export DATAPATH=$2
