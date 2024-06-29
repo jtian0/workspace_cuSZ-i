@@ -176,7 +176,37 @@ python script_data_collection.py  \
 
 ## Artifact Analysis
 
-TBD
+```bash
+## $DATAPATH is set in setup-all.sh
+
+## Nyx
+THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
+python script_data_analysis.py.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 512 512 512
+
+## Miranda
+THIS_DATADIR=SDRBENCH-Miranda-256x384x384
+python script_data_analysis.py.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 384 384 256
+
+## QMC
+THIS_DATADIR=SDRBENCH-SDRBENCH-QMCPack
+python script_data_analysis.py.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 69 69 33120
+
+## S3D
+THIS_DATRADIR=SDRBENCH-S3D
+python script_data_analysis.py.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 500 500 500
+```
 
 <!-- ## Installation
 
