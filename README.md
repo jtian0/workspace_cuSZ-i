@@ -106,7 +106,10 @@ https://github.com/spack/spack.git
 ## "$HOME/spack/bin/spack load"
 spack compiler find
 spack install gcc@9.3.0
-spack install cuda@12.4.1%gcc@9.3.0
+spack install cuda@12.4.4%gcc@9.3.0
+
+spack load gcc@9.3.0 cuda@12.4.4
+export LD_LIBRARY_PATH=$(dirname $(which nvcc))/../lib64:$LD_LIBRARY_PATH
 ```
 
 </details>
