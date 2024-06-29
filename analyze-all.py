@@ -50,6 +50,7 @@ class Analysis:
             'cuSZp': self.analyze_cuSZp,
             'cuSZi': self.analyze_cuSZi,
             'cuzfp': self.analyze_cuzfp,
+            'cuZFP': self.analyze_cuzfp,
             # Add other mappings as necessary
         }
         self.metrics = ['CR', 'BR', 'PSNR', 'NRMSE', 'cmp_cTP', 'cmp_xTP', 'nsys_cmp_cTP', 'nsys_cmp_xTP', 
@@ -681,13 +682,13 @@ class Analysis:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', '-i', type=str)
-    parser.add_argument('--output', '-o', type=str)
-    parser.add_argument('--dim', '-d', type=int,default=3)
-    parser.add_argument('--dims', '-m', type=str,nargs="+")
-    parser.add_argument('--cmp', '-c', type=str,nargs="*")
-    parser.add_argument('--eb', '-e', type=str,nargs="*")
-    parser.add_argument('--br', '-b', type=str,nargs="*")
+    parser.add_argument('--input', '-i', help="(MANDATORY) input folder for logs", type=str)
+    parser.add_argument('--output', '-o', help="(MANDATORY) output folder for CSV", type=str)
+    parser.add_argument('--dim', '-d', help="data dimension", type=int,default=3)
+    parser.add_argument('--dims', '-m', help="(MANDATORY) data dimension", type=str,nargs="+")
+    parser.add_argument('--cmp', '-c', '--compressors', help="specify a list of compressors", type=str,nargs="*")
+    parser.add_argument('--eb', '-e', help="specify a list of error bounds", type=str,nargs="*")
+    parser.add_argument('--br', '-b', help="specify a list of bit rates", type=str,nargs="*")
     parser.add_argument('--type', '-t', type=str,default="f32")
     
     
