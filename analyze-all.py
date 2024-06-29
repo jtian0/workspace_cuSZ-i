@@ -153,9 +153,9 @@ class Analysis:
             if 'compressed ratio' in line:
                 # comp_size: 3015288, compressed ratio: 1.4839
                 df.loc[df_loc, 'nvcomp_CR'] = float(line_split[-1])
-            if "CUDA Kernel Statistics" in line:
+            if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)):
                 nsys_line_number.append(line_number)
-            if ("CUDA Memory Operation Statistics (by time):" in line or "Operating System Runtime API Statistics:" in line):
+            if ((("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) or "Operating System Runtime API Statistics:" in line):
                 nsys_line_number.append(line_number)
         if len(nsys_line_number) >= 2:
             self.analyze_nsys(lines[nsys_line_number[0]:nsys_line_number[1]], df, df_loc, 
@@ -179,9 +179,9 @@ class Analysis:
             if 'Compression ratio' in line:
                 # Compression ratio = 1.49
                 df.loc[df_loc, 'bitcomp_CR'] = float(line_split[-1])
-            if "CUDA Kernel Statistics" in line:
+            if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)):
                 nsys_line_number.append(line_number)
-            if ("CUDA Memory Operation Statistics (by time):" in line or "Operating System Runtime API Statistics:" in line):
+            if ((("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) or "Operating System Runtime API Statistics:" in line):
                 nsys_line_number.append(line_number)
         if len(nsys_line_number) >= 2:
             self.analyze_nsys(lines[nsys_line_number[0]:nsys_line_number[1]], df, df_loc, 
@@ -257,9 +257,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
                         if "-fzgpu-" in line:
                             fzgpu_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(fzgpu_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(fzgpu_line_number) == 1:
                             nsys_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(fzgpu_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(fzgpu_line_number) == 1:
                             nsys_line_number.append(line_number)
                         
                         if "-compareData-" in line:
@@ -323,9 +323,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
                         if "-cusz_compress-" in line:
                             cusz_comp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
                         
                         # decompression
@@ -342,9 +342,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
                         if "-cusz_decompress-" in line:
                             cusz_decomp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_decomp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cusz_decomp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cusz_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
                         
                         
@@ -405,9 +405,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
                         if "-cusz_compress-" in line:
                             cusz_comp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
                         
                         # decompression
@@ -424,9 +424,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
                         if "-cusz_decompress-" in line:
                             cusz_decomp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_decomp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cusz_decomp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cusz_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
                         
                         
@@ -497,9 +497,9 @@ class Analysis:
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
                         if "-cuszp_compress-" in line:
                             cuSZp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cuSZp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cuSZp_line_number) == 1:
                             nsys_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cuSZp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cuSZp_line_number) == 1:
                             nsys_line_number.append(line_number)
                         
                         if "-compareData-" in line:
@@ -562,18 +562,18 @@ class Analysis:
                         # compression
                         if "-nsys compress-" in line:
                             cuzfp_comp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cuzfp_comp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cuzfp_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cuzfp_comp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cuzfp_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
                         
                         # decompression
                         
                         if "-nsys decompress-" in line:
                             cuzfp_decomp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cuzfp_decomp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cuzfp_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cuzfp_decomp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cuzfp_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
                         
                         
@@ -627,9 +627,9 @@ class Analysis:
                         # compression
                         if "-cuszx_compress-" in line:
                             cusz_comp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
-                        if "CUDA Memory Operation Statistics (by time):" in line and len(cusz_comp_line_number) == 1:
+                        if (("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) and len(cusz_comp_line_number) == 1:
                             nsys_comp_line_number.append(line_number)
                         
                         # decompression
@@ -642,9 +642,9 @@ class Analysis:
                         
                         if "-cuszx_decompress-" in line:
                             cusz_decomp_line_number.append(line_number)
-                        if "CUDA Kernel Statistics" in line and len(cusz_decomp_line_number) == 1:
+                        if (("CUDA Kernel Statistics" in line) or ("cuda_gpu_kern_sum" in line) or ("gpukernsum" in line)) and len(cusz_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
-                        if ("CUDA Memory Operation Statistics (by time):" in line or "Operating System Runtime API Statistics:" in line) and len(cusz_decomp_line_number) == 1 and len(nsys_decomp_line_number) == 1:
+                        if ((("CUDA Memory Operation Statistics (by time):" in line) or ("cuda_gpu_mem_time_sum" in line) or ("gpumemtimesum" in line)) or "Operating System Runtime API Statistics:" in line) and len(cusz_decomp_line_number) == 1 and len(nsys_decomp_line_number) == 1:
                             nsys_decomp_line_number.append(line_number)
                         
                         
