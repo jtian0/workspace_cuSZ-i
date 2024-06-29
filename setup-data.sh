@@ -10,7 +10,7 @@ URL_S3D=https://g-8d6b0.fd635.8443.data.globus.org/ds131.2/Data-Reduction-Repo/r
 if [ $# -eq 1 ]; then
     if [[ "$1" = "purgesoftlink" ]]; then
         echo "purging soft/symbolic links..."
-        rm -f SDRBENCH-QMCPack 
+        rm -f SDRBENCH-QMCPack
         exit 0
     fi
 fi
@@ -50,10 +50,8 @@ if [ -d dataset ]; then
     EXISTING=dataset
     FILE=$(basename $URL_QMC)
     SUPPOSED=$(basename $FILE .tar.gz)
-    echo -e "${BOLDRED}linking QMCPack dir...${NOCOLOR}"
-    if [ ! -f ${SUPPOSED} ]; then
-        ln -s ${EXISTING} ${SUPPOSED}
-    fi
+    mkdir -p $SUPPOSED
+    mv $EXISTING/288x115x69x69/einspline_288_115_69_69.pre.f32 $SUPPOSED
 fi
 
 ## covert f8 to f4, Miranda
@@ -63,13 +61,14 @@ echo -e "${BOLDRED}converting Miranda data...${NOCOLOR}"
 pushd ${MIRANDA_DIR}
 for F8_DATA in *.d64; do
     F4_DATA=$(basename ${F8_DATA} .d64).f32
-    if [ ! -f ${F4_DTA} ]; then 
-        echo -e "    ${RED}coverting ${F8_DATA} to ${F4_DATA}${NOCOLOR}"
+    if [ ! -f ${F4_DTA} ]; then
+        echo -e "    ${RED}coverting ${F8_DATA} to ${F4_DATA} (overwrite)${NOCOLOR}"
         convertDoubleToFloat ${F8_DATA} ${F4_DATA} >/dev/null
     else
         echo -e "    ${RED}${F4_DATA} exists...skip converting${NOCOLOR}"
     fi
 done
+rm -f *.d64
 popd
 
 # split S3D
@@ -92,6 +91,55 @@ if [ $S3D_DONE -eq 0 ]; then
     echo -e "${BOLDRED}spliting S3D data...${NOCOLOR}"
     python ${WORKSPACE}/split-S3D.py
 fi
+
+rm -f \
+stat_planar.1.1000E-03.CH4.f32 \
+stat_planar.1.1000E-03.CO2.f32 \
+stat_planar.1.1000E-03.CO.f32 \
+stat_planar.1.1000E-03.H2O.f32 \
+stat_planar.1.1000E-03.N2.f32 \
+stat_planar.1.1000E-03.O2.f32 \
+stat_planar.1.1000E-03.PRES.f32 \
+stat_planar.1.1000E-03.T.f32 \
+stat_planar.1.1000E-03.U.f32 \
+stat_planar.1.1000E-03.V.f32 \
+stat_planar.1.1000E-03.W.f32 \
+stat_planar.1.7000E-03.CH4.f32 \
+stat_planar.1.7000E-03.CO2.f32 \
+stat_planar.1.7000E-03.CO.f32 \
+stat_planar.1.7000E-03.H2O.f32 \
+stat_planar.1.7000E-03.N2.f32 \
+stat_planar.1.7000E-03.O2.f32 \
+stat_planar.1.7000E-03.PRES.f32 \
+stat_planar.1.7000E-03.T.f32 \
+stat_planar.1.7000E-03.U.f32 \
+stat_planar.1.7000E-03.V.f32 \
+stat_planar.1.7000E-03.W.f32 \
+stat_planar.2.3500E-03.N2.f32 \
+stat_planar.2.3500E-03.PRES.f32 \
+stat_planar.2.9000E-03.CH4.f32 \
+stat_planar.2.9000E-03.CO2.f32 \
+stat_planar.2.9000E-03.CO.f32 \
+stat_planar.2.9000E-03.H2O.f32 \
+stat_planar.2.9000E-03.N2.f32 \
+stat_planar.2.9000E-03.O2.f32 \
+stat_planar.2.9000E-03.PRES.f32 \
+stat_planar.2.9000E-03.T.f32 \
+stat_planar.2.9000E-03.U.f32 \
+stat_planar.2.9000E-03.V.f32 \
+stat_planar.2.9000E-03.W.f32 \
+stat_planar.2.9950E-03.CH4.f32 \
+stat_planar.2.9950E-03.CO2.f32 \
+stat_planar.2.9950E-03.CO.f32 \
+stat_planar.2.9950E-03.H2O.f32 \
+stat_planar.2.9950E-03.N2.f32 \
+stat_planar.2.9950E-03.O2.f32 \
+stat_planar.2.9950E-03.PRES.f32 \
+stat_planar.2.9950E-03.T.f32 \
+stat_planar.2.9950E-03.U.f32 \
+stat_planar.2.9950E-03.V.f32 \
+stat_planar.2.9950E-03.W.f32
+
 popd
 
 ## TODO JHTDB
