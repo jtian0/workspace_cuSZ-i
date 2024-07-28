@@ -134,7 +134,7 @@ source setup-all.sh 11 <WHERE_TO_PUT_DATA_DIRS>
 bash setup-all.sh purge
 
 ## (3) prepare the data
-bash setup-data.sh
+python setup-data-v2.py
 ```
 
 ## Artifact Execution
@@ -143,6 +143,7 @@ Navigate back to the workplace using `cd $WORKSPACE`. Then, run for each dataset
 
 ```bash
 ## $DATAPATH is set in setup-all.sh
+## Please copy-paste each text block to run the per-dataset experiments.
 
 ## Nyx
 THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
@@ -178,6 +179,7 @@ python script_data_collection.py  \
 
 ```bash
 ## $DATAPATH is set in setup-all.sh
+## Please copy-paste each text block to get the raw analysis results.
 
 ## Nyx
 THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
