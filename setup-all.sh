@@ -55,6 +55,6 @@ elif [ $# -eq 2 ]; then
     bash setup-analyzer.sh
     python setup-nvcomp.py $1
 
-    export DATAPATH=$2
-    echo -e "\n${BOLDRED}specified data path as $2${NOCOLOR}"
+    export DATAPATH=$(readlink $2)
+    echo -e "\n${BOLDRED}specified data path as "$2" (abs path: "${DATAPATH}")${NOCOLOR}"
 fi

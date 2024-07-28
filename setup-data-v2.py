@@ -23,10 +23,13 @@ db: dict = {
         "type": "f4",
         "url": "https://g-8d6b0.fd635.8443.data.globus.org/ds131.2/Data-Reduction-Repo/raw-data/QMCPack/SDRBENCH-QMCPack.tar.gz",
         "tar_gz": "SDRBENCH-QMCPack.tar.gz",
-        "untar_dir": "SDRBENCH-QMCPack",
+        "untar_dir": "dataset",
+        "supposed_untar_dir": "SDRBENCH-QMCPack",
         "file_list": [
-            "115x69x69x288/einspline_115_69_69_288.f32",
+            # "115x69x69x288/einspline_115_69_69_288.f32",
             "288x115x69x69/einspline_288_115_69_69.pre.f32",
+            # "einspline_115_69_69_288.f32",
+            "einspline_288_115_69_69.pre.f32",
         ],
     },
     "miranda": {
@@ -195,10 +198,10 @@ def download(key: str):
 
     target_tar_gz = os.path.join(datapath, tar_gz)
     if os.path.exists(target_tar_gz):
-        print(f"    {target_tar_gz} exists...skip downloading")
+        print(f"[{key}::wget]\t{target_tar_gz} exists...skip downloading")
         pass
     else:
-        print(f"    downloading {tar_gz}")
+        print(f"[{key}::wget]\tdownloading {tar_gz}")
         cmd = f"wget {url} -P {datapath}"
         # print(cmd)
         sp.check_call(cmd, shell=True)
@@ -211,10 +214,12 @@ def untar(key: str):
     target_tar_gz = os.path.join(datapath, tar_gz)
 
     if not os.path.exists(target_tar_gz):
-        raise FileNotFoundError(f"    {target_tar_gz} (for {key}) does not exists...")
+        raise FileNotFoundError(f"[untar {key}]\t{target_tar_gz} (for {key}) does not exists...")
     
-    if all([os.path.exists(f"{datapath}/{untar_dir}/{i}") for i in db[key]['file_list']]):
-        print(f"    all files previously untar'ed...skip")
+    if key == "qmc" and any([os.path.exists(f"{datapath}/{untar_dir}/{i}") for i in db[key]['file_list']]):
+        print(f"[{key}::untar]\tneeded files previously untar'ed ({key})...skip")
+    elif all([os.path.exists(f"{datapath}/{untar_dir}/{i}") for i in db[key]['file_list']]):
+        print(f"[{key}::untar]\tall files previously untar'ed ({key})...skip")
     else:
         cmd = f"tar zxvf {target_tar_gz} --directory {datapath}"
         # print(cmd)
@@ -223,15 +228,17 @@ def untar(key: str):
 
 # special fix to QMC: nested dir
 def fix_qmc():
-    ori_dir = os.path.join(datapath, "dataset")
-    untar_dir = db["qmc"]["untar_dir"]
+    ori_dir = os.path.join(datapath, "dataset") if datapath.startswith("/") else "dataset"
+    untar_dir = db["qmc"]["supposed_untar_dir"]
     supposed_dir = os.path.join(datapath, untar_dir)
 
     # create a symbolic link to "dataset"
     try:
         os.symlink(ori_dir, supposed_dir)
     except FileExistsError:
-        # print("    renamed QMC dir")
+        os.remove(supposed_dir)
+        os.symlink(ori_dir, supposed_dir)
+        print("[qmc::fix]\tcreated a symbolic link for QMC dir")
         pass
 
     # flatten qmc dir
@@ -247,7 +254,7 @@ def fix_qmc():
             pass
         else:
             raise FileNotFoundError(
-                f"[fix_qmc] Please go to {datapath}, manually run `tar zxvf SDRBENCH-QMCPack.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
+                f"[qmc::fix]\tPlease go to {datapath}, manually run `tar zxvf SDRBENCH-QMCPack.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
             )
 
 
@@ -258,7 +265,7 @@ def convert_miranda():
     if all([os.path.exists(f"{datapath}/{fdir}/{i}") for i in flist_d64]):
         ## exists .d64
         if not all([os.path.exists(f"{datapath}/{fdir}/{i}") for i in flist_f32]):
-            print("    converting Miranda from f8 to f4...")
+            print("[miranda::convert]\tconverting from f8 to f4...")
             for i, (src, dst) in enumerate(zip(flist_d64, flist_f32)):
                 src = f"{datapath}/{fdir}/{src}"
                 dst = f"{datapath}/{fdir}/{dst}"
@@ -267,10 +274,10 @@ def convert_miranda():
                 )
             print()
         else:
-            print("[convert_miranda] All .f32 files are ready, skip")
+            print("[miranda::convert]\tall .f32 files ready, skip")
     else:
         print(
-            f"[convert_miranda] Please go to {datapath}, manually run `tar zxvf SDRBENCH-Miranda-256x384x384.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
+            f"[miranda::convert]\tPlease go to {datapath}, manually run `tar zxvf SDRBENCH-Miranda-256x384x384.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
         )
 
 
@@ -301,14 +308,14 @@ def convert_s3d():
         ## exists .d64
         feature_list = [i for i in flist_f32 if i not in flist_f32_del]
         if not all([os.path.exists(f"{datapath}/{fdir}/{i}") for i in feature_list]):
-            print("    extacting S3D data (from f8 to f4) and converting...")
+            print("[s3d::convert]\textacting S3D data (from f8 to f4) and converting...")
             convert_s3d_helper()
 
         else:
-            print("[convert_s3d] All .f32 files are ready, skip")
+            print("[s3d::convert]\tall .f32 files ready, skip")
     else:
         print(
-            f"[convert_s3d] Please go to {datapath}, manually run `tar zxvf SDRBENCH-S3D.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
+            f"[s3d::conver]\tPlease go to {datapath}, manually run `tar zxvf SDRBENCH-S3D.tar.gz`, and come back to this director, and rerun by `python setup-data-v2.py`"
         )
 
 
@@ -320,7 +327,7 @@ try:
     datapath = os.environ["DATAPATH"]
 except KeyError as e:
     print(
-        "Shell variable `DATAPATH` is not set. Please `source setup-all.sh <CUDA VER> <WHERE_TO_PUT_DATA_DIRS>`."
+        "[setup data]\tShell variable `DATAPATH` is not set. Please `source setup-all.sh <CUDA VER> <WHERE_TO_PUT_DATA_DIRS>`."
     )
     exit(1)
 
