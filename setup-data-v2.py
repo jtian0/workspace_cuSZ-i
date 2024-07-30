@@ -327,9 +327,15 @@ try:
     datapath = os.environ["DATAPATH"]
 except KeyError as e:
     print(
-        "[setup data]\tShell variable `DATAPATH` is not set. Please `source setup-all.sh <CUDA VER> <WHERE_TO_PUT_DATA_DIRS>`."
+        "[setup::data]\tShell variable `DATAPATH` is not set. Please `source setup-all.sh <CUDA VER> <WHERE_TO_PUT_DATA_DIRS>`."
     )
     exit(1)
+
+if not os.path.exists(datapath):
+    os.makedirs(datapath)
+    print(f"[setup::data]\tcreating DATAPATH -> {datapath}")
+else:
+    print(f"[setup::data]\tDATAPATH -> {datapath} exists, skip")
 
 # print(datapath)
 
