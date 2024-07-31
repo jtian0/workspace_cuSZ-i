@@ -141,6 +141,53 @@ python setup-data-v2.py
 
 Navigate back to the workplace using `cd $WORKSPACE`. Then, run for each dataset.
 
+<details>
+<summary>
+Unfold to see commands to run the fast experiments covering cuSZ-i only.
+</summary>
+
+```bash
+## $DATAPATH is set in setup-all.sh
+## Please copy-paste each text block to run the per-dataset experiments.
+
+## Nyx
+THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
+python script_data_collection.py  \
+  --input ${DATAPATH}/${THIS_DATADIR} \
+  --output $DATAPATH/${THIS_DATADIR}_log \
+  --dims 512 512 512 --cmp cuSZi
+
+## Miranda
+THIS_DATADIR=SDRBENCH-Miranda-256x384x384
+python script_data_collection.py  \
+  --input ${DATAPATH}/${THIS_DATADIR} \
+  --output $DATAPATH/${THIS_DATADIR}_log \
+  --dims 384 384 256 --cmp cuSZi
+
+## QMC
+THIS_DATADIR=SDRBENCH-SDRBENCH-QMCPack
+python script_data_collection.py  \
+  --input ${DATAPATH}/${THIS_DATADIR} \
+  --output $DATAPATH/${THIS_DATADIR}_log \
+  --dims 69 69 33120 --cmp cuSZi
+
+## S3D
+THIS_DATRADIR=SDRBENCH-S3D
+python script_data_collection.py  \
+  --input ${DATAPATH}/${THIS_DATADIR} \
+  --output $DATAPATH/${THIS_DATADIR}_log \
+  --dims 500 500 500 --cmp cuSZi
+```
+</details>
+
+
+</details>
+
+<details>
+<summary>
+Unfold to see commands to run the full experiments covering all compressors.
+</summary>
+
 ```bash
 ## $DATAPATH is set in setup-all.sh
 ## Please copy-paste each text block to run the per-dataset experiments.
@@ -174,8 +221,15 @@ python script_data_collection.py  \
   --dims 500 500 500
 ```
 
+</details>
+
 
 ## Artifact Analysis
+
+<details>
+<summary>
+Unfold to see commands to analyze cuSZ-i only.
+</summary>
 
 ```bash
 ## $DATAPATH is set in setup-all.sh
@@ -183,29 +237,71 @@ python script_data_collection.py  \
 
 ## Nyx
 THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
-python script_data_analysis.py.py  \
+python script_data_analysis.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 512 512 512 --cmp cuSZi
+
+## Miranda
+THIS_DATADIR=SDRBENCH-Miranda-256x384x384
+python script_data_analysis.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 384 384 256 --cmp cuSZi
+
+## QMC
+THIS_DATADIR=SDRBENCH-SDRBENCH-QMCPack
+python script_data_analysis.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 69 69 33120 --cmp cuSZi
+
+## S3D
+THIS_DATRADIR=SDRBENCH-S3D
+python script_data_analysis.py  \
+  --input ${DATAPATH}/${THIS_DATADIR}_log \
+  --output $DATAPATH/${THIS_DATADIR}_csv \
+  --dims 500 500 500 --cmp cuSZi
+```
+
+</details>
+
+<details>
+<summary>
+Unfold to see commands to analyze all compressors.
+</summary>
+
+```bash
+## $DATAPATH is set in setup-all.sh
+## Please copy-paste each text block to get the raw analysis results.
+
+## Nyx
+THIS_DATADIR=SDRBENCH-EXASKY-NYX-512x512x512
+python script_data_analysis.py  \
   --input ${DATAPATH}/${THIS_DATADIR}_log \
   --output $DATAPATH/${THIS_DATADIR}_csv \
   --dims 512 512 512
 
 ## Miranda
 THIS_DATADIR=SDRBENCH-Miranda-256x384x384
-python script_data_analysis.py.py  \
+python script_data_analysis.py  \
   --input ${DATAPATH}/${THIS_DATADIR}_log \
   --output $DATAPATH/${THIS_DATADIR}_csv \
   --dims 384 384 256
 
 ## QMC
 THIS_DATADIR=SDRBENCH-SDRBENCH-QMCPack
-python script_data_analysis.py.py  \
+python script_data_analysis.py  \
   --input ${DATAPATH}/${THIS_DATADIR}_log \
   --output $DATAPATH/${THIS_DATADIR}_csv \
   --dims 69 69 33120
 
 ## S3D
 THIS_DATRADIR=SDRBENCH-S3D
-python script_data_analysis.py.py  \
+python script_data_analysis.py  \
   --input ${DATAPATH}/${THIS_DATADIR}_log \
   --output $DATAPATH/${THIS_DATADIR}_csv \
   --dims 500 500 500
 ```
+
+</details>
