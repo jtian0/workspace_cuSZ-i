@@ -3,13 +3,13 @@
 	url = https://github.com/JLiu-1/cusz-I.git
 [submodule "fzgpu"]
 	path = fzgpu
-	url = https://github.com/szcompressor/FZ-GPU.git
+	url = https://github.com/shixun404/FZ-GPU.git
 [submodule "SZx"]
 	path = szx-cuda
 	url = https://github.com/szcompressor/SZx
 [submodule "cuszp"]
 	path = cuszp
-	url = https://github.com/szcompressor/cuSZp.git
+	url = https://github.com/shixun404/cuSZp
 [submodule "cuzfp"]
 	path = zfp-cuda_upstream
 	url = https://github.com/LLNL/zfp.git
