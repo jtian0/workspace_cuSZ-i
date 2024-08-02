@@ -669,10 +669,10 @@ class Analysis:
                         self.analyze_bitcomp(lines[bitcomp_line_number[0]:bitcomp_line_number[1]], df, (eb, data_point), compressed_size)
                 except Exception as e:
                     print(f"An error occurred: {e}")
-                    print(file_path)
-                    print(nvcomp_line_number)
-                    print(len(lines))
-                    assert 0
+                    # print(file_path)
+                    # print(nvcomp_line_number)
+                    # print(len(lines))
+                    # assert 0
                     pass
             self.compute_overall(df, eb)
         
