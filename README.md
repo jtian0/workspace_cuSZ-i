@@ -1,44 +1,6 @@
-# cuSZ-i Artifacts for SC '24
+# Private Repository for cuSZ-i Workgroup
 
-This repo contains the full artifacts of cuSZ-i work accepted in SC '24 conference.
-
-## Preface
-<details>
-<summary>
-Paper's Main Contributions
-</summary>
-
-- `C_1` We develop a GPU-optimized interpolation-based data predictor *G-Interp* with highly parallelized efficient interpolation, which can present excellent data prediction accuracy.
-- `C_2` We design a lightweight interpolation auto-tuning kernel for GPU interpolation to optimize both the performance and compression quality of cuSZ-*i*.
-- `C_3` We improve the implementation of GPU-based Huffman encoding and import a new lossless module to reduce its encoding redundancy further.
-- `C_4` cuSZ-*i* improves compression ratio over other state-of-the-art GPU-based scientific lossy compressors by up to 476\% under the same error bound or PSNR. Meanwhile, it preserves a compression throughput of the same magnitude as other GPU compressors.
-
-</details>
-
-<details>
-<summary>
-Expected Results
-</summary>
-With the provided setup, the artifacts reproduce the experimental results reported in the paper, verifying cuSZ-*i*'s high compression ratio and quality and moderate throughput.
-</details>
-
-<details>
-<summary>
-Expected Reproduction Time
-</summary>
-Normally,
-
-- The setup can be completed in 10 minutes.
-- The executions should take 1 hour.
-- The analysis can take a few minutes.
-
-In case of the compatibility issue, we *alternatively* provide the `spack` installation instruction to replicate our tested environment:
-
-- Please refer to the installation section for details.
-- The \emph{alternative} Spack installation/deployment significantly increases the setup time to one hour due to building everything from the source code.
-- The time for executions and the analysis remains unchanged.
-
-</details>
+This detached repo is based on the SC '24 artifacts for continous development.
 
 ## Artifact Setup
 
