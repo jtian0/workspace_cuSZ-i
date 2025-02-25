@@ -53,7 +53,7 @@ elif [ $# -eq 2 ]; then
     echo -e "\n${BOLDRED}specified CUDA version $1${NOCOLOR}"
     bash setup-compressors.sh
     bash setup-analyzer.sh
-    python setup-nvcomp.py $1
+    # python setup-nvcomp.py $1
 
     export DATAPATH=$(readlink -f $2)
     echo -e "\n${BOLDRED}specified data path as "$2" (abs path: "${DATAPATH}")${NOCOLOR}"

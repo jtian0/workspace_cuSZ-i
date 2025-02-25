@@ -167,19 +167,19 @@ def run_cuSZ(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
     result = subprocess.run(command[0], capture_output=True, text=True)
     decomp_result = subprocess.run(command[1], capture_output=True, text=True)
     qcat_result = subprocess.run(command[2], capture_output=True, text=True)
-    nvcomp = copy.deepcopy(bitcomp_cmd_nv)
-    nvcomp[-3] += '.cusza'
-    bitcomp = copy.deepcopy(bitcomp_cmd)
-    bitcomp[-1] += '.cusza'
-    nvcomp_result = subprocess.run(nvcomp, capture_output=True, text=True)
-    bitcomp_result = subprocess.run(bitcomp, capture_output=True, text=True)
+    # nvcomp = copy.deepcopy(bitcomp_cmd_nv)
+    # nvcomp[-3] += '.cusza'
+    # bitcomp = copy.deepcopy(bitcomp_cmd)
+    # bitcomp[-1] += '.cusza'
+    # nvcomp_result = subprocess.run(nvcomp, capture_output=True, text=True)
+    # bitcomp_result = subprocess.run(bitcomp, capture_output=True, text=True)
     with open(file_path, 'w') as file:
         file.write("-cusz_compress-\n" + result.stdout + result.stderr + "-cusz_compress-\n" + 
                    "-cusz_decompress-\n" + decomp_result.stdout + decomp_result.stderr + "-cusz_decompress-\n" + 
-                   "-nvcomp-\n" + nvcomp_result.stdout + nvcomp_result.stderr + "-nvcomp-\n" + 
-                   "-bitcomp-\n" + bitcomp_result.stdout + bitcomp_result.stderr + "-bitcomp-\n" +
+                #    "-nvcomp-\n" + nvcomp_result.stdout + nvcomp_result.stderr + "-nvcomp-\n" + 
+                #    "-bitcomp-\n" + bitcomp_result.stdout + bitcomp_result.stderr + "-bitcomp-\n" +
                    "-compareData-\n" + qcat_result.stdout + qcat_result.stderr + '-compareData-\n')
-    result = subprocess.run(command[-1], capture_output=True, text=True)
+    # result = subprocess.run(command[-1], capture_output=True, text=True)
 
 def run_cuSZp(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
     result = subprocess.run(command[0], capture_output=True, text=True)
@@ -297,7 +297,7 @@ if __name__ == '__main__':
                     cmd, cmd_nvcomp, cmd_bitcomp = update_command(cmp, data_path, data_size, error_bound=eb, nsys_result_path=nsys_result_path)
                     for i in cmd: 
                         echo_cmd(i)
-                    echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
+                    # echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
                     run_func_dict[cmp](cmd, cmd_nvcomp, cmd_bitcomp, file_path + "_eb=" + eb + "_" + cmp)
                 
                     
