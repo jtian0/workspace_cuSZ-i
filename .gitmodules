@@ -16,3 +16,6 @@
 [submodule "zfp-cuda_patched"]
 	path = zfp-cuda_patched
 	url = https://github.com/robertu94/zfp.git
+[submodule "cusz-interp"]
+	path = cusz-interp
+	url = https://github.com/JinwenPan/cusz-I.git
