@@ -53,8 +53,10 @@ class Analysis:
             'cuZFP': self.analyze_cuzfp,
             # Add other mappings as necessary
         }
-        self.metrics = ['CR', 'BR', 'PSNR', 'NRMSE', 'cmp_cTP', 'cmp_xTP', 'nsys_cmp_cTP', 'nsys_cmp_xTP', 
-                        'nvcomp_CR', 'nvcomp_cTP', 'nvcomp_xTP', 'bitcomp_CR', 'bitcomp_cTP', 'bitcomp_xTP',]
+        # self.metrics = ['CR', 'BR', 'PSNR', 'NRMSE', 'cmp_cTP', 'cmp_xTP', 'nsys_cmp_cTP', 'nsys_cmp_xTP', 
+        #                 'nvcomp_CR', 'nvcomp_cTP', 'nvcomp_xTP', 'bitcomp_CR', 'bitcomp_cTP', 'bitcomp_xTP',]
+        self.metrics = ['CR', 'BR', 'PSNR', 'NRMSE', 'cmp_cTP', 'cmp_xTP', 'nsys_cmp_cTP', 'nsys_cmp_xTP']
+
         self.df = {}
         self.df_overall = {}
     
@@ -70,7 +72,7 @@ class Analysis:
             #print(self.df_overall[cmp])
             
     def extract_overall(self, df):
-        overall_df = df.xs('_overall', level='Data_Point')
+        overall_df = df.xs('_overall', level='Data_Point').copy()
         overall_df.index = overall_df.index.map(float)
         overall_df.sort_index(inplace=True)
         overall_df.index = overall_df.index.map('{:0.1e}'.format)
@@ -86,13 +88,13 @@ class Analysis:
         df.loc[(eb, '_overall'), 'CR'] = harmonic_mean
         
         
-        non_overall_values = df.loc[eb, 'nvcomp_CR'].drop((eb, '_overall'), errors='ignore')
-        harmonic_mean = hmean(non_overall_values.dropna().values) if len(non_overall_values.dropna().values) != 0 else None
-        df.loc[(eb, '_overall'), 'nvcomp_CR'] = harmonic_mean
+        # non_overall_values = df.loc[eb, 'nvcomp_CR'].drop((eb, '_overall'), errors='ignore')
+        # harmonic_mean = hmean(non_overall_values.dropna().values) if len(non_overall_values.dropna().values) != 0 else None
+        # df.loc[(eb, '_overall'), 'nvcomp_CR'] = harmonic_mean
         
-        non_overall_values = df.loc[eb, 'bitcomp_CR'].drop((eb, '_overall'), errors='ignore')
-        harmonic_mean = hmean(non_overall_values.dropna().values) if len(non_overall_values.dropna().values) != 0 else None
-        df.loc[(eb, '_overall'), 'bitcomp_CR'] = harmonic_mean
+        # non_overall_values = df.loc[eb, 'bitcomp_CR'].drop((eb, '_overall'), errors='ignore')
+        # harmonic_mean = hmean(non_overall_values.dropna().values) if len(non_overall_values.dropna().values) != 0 else None
+        # df.loc[(eb, '_overall'), 'bitcomp_CR'] = harmonic_mean
         
         # BR
         non_overall_values = df.loc[eb, 'BR'].drop((eb, '_overall'), errors='ignore')
@@ -389,9 +391,15 @@ class Analysis:
                     file = open(file_path, 'r')
                     file_content = file.read()
                     lines = file_content.splitlines()
+
+                    # Check if file is valid by looking at 3rd line
+                    if len(lines) < 3 or lines[2] != "(c) COMPRESSION REPORT":
+                        # Skip this file and leave data empty
+                        continue
+
                     compareDATA_line_number = []
-                    nvcomp_line_number = []
-                    bitcomp_line_number = []
+                    # nvcomp_line_number = []
+                    # bitcomp_line_number = []
                     cusz_comp_line_number = []
                     cusz_decomp_line_number = []
                     nsys_comp_line_number = []
@@ -399,7 +407,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line:
+                        if "(total)" in line and line_number > 0 and "rre2" in lines[line_number-1]:
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -418,7 +426,7 @@ class Analysis:
                             compression_ratio_value = float(line_split[index])
                             df.loc[(eb, data_point), 'CR'] = compression_ratio_value
                             df.loc[(eb, data_point), 'BR'] = 32.0 / compression_ratio_value
-                        if "(total)" in line:
+                        if "(total)" in line and line_number > 0 and "predict" in lines[line_number-1]:
                             index = line_split.index("(total)") + 2
                             decompression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
@@ -432,21 +440,18 @@ class Analysis:
                         
                         if "-compareData-" in line:
                             compareDATA_line_number.append(line_number)
-                        if "-nvcomp-" in line:
-                            nvcomp_line_number.append(line_number)
-                        if "-bitcomp-" in line:
-                            bitcomp_line_number.append(line_number)
+                        # if "-nvcomp-" in line:
+                        #     nvcomp_line_number.append(line_number)
+                        # if "-bitcomp-" in line:
+                        #     bitcomp_line_number.append(line_number)
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_cTP', self.data_size, [" cusz::c_spline3d_infprecis_32x8x8data", "psz::detail::hf_encode_phase2_deflate", 
-                                        "histsp_multiwarp", "psz::detail::hf_encode_phase1_fill", "psz::extrema_kernel", "psz::detail::hf_encode_phase4_concatenate",
-                                        "cusz::c_spline3d_profiling_data_2"])
+                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_32x8x8data", "cusz::c_spline3d_profiling_data_2", "d_encode", "psz::extrema_kernel"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_xTP', self.data_size, [" hf_decode_kernel", 
-                                        "cusz::x_spline3d_infprecis_32x8x8data", "psz::extrema_kernel"])
+                          'nsys_cmp_xTP', self.data_size, ["d_decode", "cusz::x_spline3d_infprecis_32x8x8data", "psz::extrema_kernel"])
                     compressed_size = self.data_size / compression_ratio_value
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
-                    self.analyze_nvcomp(lines[nvcomp_line_number[0]:nvcomp_line_number[1]], df, (eb, data_point), compressed_size)
-                    self.analyze_bitcomp(lines[bitcomp_line_number[0]:bitcomp_line_number[1]], df, (eb, data_point), compressed_size)
+                    # self.analyze_nvcomp(lines[nvcomp_line_number[0]:nvcomp_line_number[1]], df, (eb, data_point), compressed_size)
+                    # self.analyze_bitcomp(lines[bitcomp_line_number[0]:bitcomp_line_number[1]], df, (eb, data_point), compressed_size)
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     print(file_path)
