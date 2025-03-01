@@ -392,9 +392,18 @@ class Analysis:
                     file_content = file.read()
                     lines = file_content.splitlines()
 
-                    # Check if file is valid by looking at 3rd line
-                    if len(lines) < 3 or lines[2] != "(c) COMPRESSION REPORT":
-                        # Skip this file and leave data empty
+                    # Check if file has both compression and decompression reports
+                    has_compression = False
+                    has_decompression = False
+                    for line in lines:
+                        if line.startswith("(c)"):
+                            has_compression = True
+                        elif line.startswith("(d)"):
+                            has_decompression = True
+                        if has_compression and has_decompression:
+                            break
+                    if not has_compression or not has_decompression:
+                        # Skip if missing either compression or decompression report
                         continue
 
                     compareDATA_line_number = []

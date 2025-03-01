@@ -191,7 +191,7 @@ COR::compress_rre2(pszctx* ctx, void* stream)
     // if (spline_in_use()) { PSZDBG_LOG("codebook: done"); }
     // if (spline_in_use()){PSZSANITIZE_HIST_BK(mem->ht->hptr(),
     // codec->bk4->hptr(), booklen);}
-    RRE2_COMPRESS((uint32_t*)mem->ectrl(), len, &comp_rre2_out, &comp_rre2_outlen, &time_rre2);
+    RRE2_COMPRESS((uint32_t*)mem->ectrl(), len, &comp_rre2_out, &comp_rre2_outlen, &rre2_padding_bytes, &time_rre2);
     // codec->encode(mem->ectrl(), len, &comp_hf_out, &comp_hf_outlen, stream);
     if (spline_in_use()) { PSZDBG_LOG("rre2 encoding done"); }
   }
@@ -211,7 +211,7 @@ COR::compress_update_header(pszctx* ctx, void* stream)
   header.pred_type = ctx->pred_type;
   header.dtype = PszType<T>::type;
   header.intp_param=ctx->intp_param;
-
+  header.rre2_padding_bytes = rre2_padding_bytes;
   // TODO no need to copy header to device
 #if defined(PSZ_USE_CUDA) || defined(PSZ_USE_HIP)
   CHECK_GPU(GpuMemcpyAsync(
@@ -433,7 +433,7 @@ COR::decompress_rre2(pszheader* header, BYTE* in, uninit_stream_t stream)
   auto access = [&](int FIELD, szt offset_nbyte = 0) {
     return (void*)(in + header->entry[FIELD] + offset_nbyte);
   };
-  RRE2_DECOMPRESS((uint8_t*)access(Header::VLE), &mem->e->m->d, &time_rre2);
+  RRE2_DECOMPRESS((uint8_t*)access(Header::VLE), &mem->e->m->d, header->rre2_padding_bytes, &time_rre2);
   return this;
 }
 

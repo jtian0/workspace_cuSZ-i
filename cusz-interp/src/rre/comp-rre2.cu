@@ -271,7 +271,7 @@ __global__ void convert_kernel(uint16_t* output, const uint32_t* input, size_t s
   }
 }
 
-void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* outsize, float* time)
+void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* outsize, size_t* rre2_padding_bytes, float* time)
 { 
   // Allocate GPU memory for uint16_t array
   uint16_t* d_input16;
@@ -327,7 +327,7 @@ void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* out
   const int blocks = SMs * (mTpSM / TPB);
   const int chunks = (insize + CS - 1) / CS;  // round up
   CheckCuda(__LINE__);
-  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS;
+  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS + 3;
   
   // allocate GPU memory
   // byte* dencoded;
@@ -371,7 +371,13 @@ void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* out
   // get encoded GPU result
   int dencsize = 0;
   cudaMemcpy(&dencsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
-  *outsize = (size_t)dencsize;
+  
+  // Calculate padding needed for 4-byte alignment
+  size_t padding = (4 - (dencsize % 4)) % 4;
+  *rre2_padding_bytes = padding;
+  
+  // Round up size to 4-byte alignment
+  *outsize = (size_t)(dencsize + padding);
   *output = d_encoded;
   // cudaMemcpy(dencoded, d_encoded, dencsize, cudaMemcpyDeviceToHost);
   // printf("encoded size: %d bytes\n", dencsize);

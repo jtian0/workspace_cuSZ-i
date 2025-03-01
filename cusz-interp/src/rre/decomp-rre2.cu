@@ -232,7 +232,7 @@ __global__ void convert_kernel(uint32_t* output, const uint16_t* input, size_t s
   }
 }
 
-void RRE2_DECOMPRESS(uint8_t* input, void** output, float* time)
+void RRE2_DECOMPRESS(uint8_t* input, void** output, size_t rre2_padding_bytes, float* time)
 { 
   // read first int from GPU memory to CPU
   int pre_size;

@@ -67,6 +67,7 @@ class Compressor {
 
   BYTE* comp_rre2_out{nullptr};
   size_t comp_rre2_outlen{0};
+  size_t rre2_padding_bytes{0};
 
   // configs
   float outlier_density{0.2};

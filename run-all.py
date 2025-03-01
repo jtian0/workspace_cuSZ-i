@@ -122,9 +122,8 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     ],
                 ["compareData",
                     "-f",  data_path, data_path+'.cuszx',],
-                # ["rm",
-                #     data_path + '.cusza', data_path+'.cuszx', data_path + '.cusza.bitcomp',data_path + '.cusza.bitcomp.decompressed'
-                #     ,  "./nsys/result.nsys-rep",  "./nsys/result.sqlite"],
+                ["rm",
+                    data_path + '.cusza', data_path+'.cuszx']
                 ]
     cmd_nvcomp = [
         "nsys", "profile",  "--stats=true", "-o", nsys_result_path, "benchmark_bitcomp_chunked",
@@ -179,7 +178,7 @@ def run_cuSZ(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
                 #    "-nvcomp-\n" + nvcomp_result.stdout + nvcomp_result.stderr + "-nvcomp-\n" + 
                 #    "-bitcomp-\n" + bitcomp_result.stdout + bitcomp_result.stderr + "-bitcomp-\n" +
                    "-compareData-\n" + qcat_result.stdout + qcat_result.stderr + '-compareData-\n')
-    # result = subprocess.run(command[-1], capture_output=True, text=True)
+    result = subprocess.run(command[-1], capture_output=True, text=True)
 
 def run_cuSZp(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
     result = subprocess.run(command[0], capture_output=True, text=True)
@@ -310,5 +309,5 @@ if __name__ == '__main__':
                     cmd, cmd_nvcomp, cmd_bitcomp = update_command(cmp, data_path, data_size, bit_rate=br, nsys_result_path=nsys_result_path)
                     for i in cmd: 
                         echo_cmd(i)
-                    echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
+                    # echo_cmd(cmd_nvcomp); echo_cmd(cmd_bitcomp)
                     run_func_dict[cmp](cmd, cmd_nvcomp, cmd_bitcomp, file_path + "_br=" + br + "_" + cmp)
