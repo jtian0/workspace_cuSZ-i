@@ -161,10 +161,10 @@ COR::compress_encode(pszctx* ctx, void* stream)
   {
     codec->build_codebook(mem->ht, booklen, stream);
     // [TODO] CR estimation must be after building codebook; need a flag.
-    if (ctx->report_cr_est) {
-      auto overhead = spline_in_use() ? sizeof(T) * mem->ac->len() : 0;
-      codec->calculate_CR(mem->e, sizeof(T), overhead);
-    }
+    // if (ctx->report_cr_est) {
+    //   auto overhead = spline_in_use() ? sizeof(T) * mem->ac->len() : 0;
+    //   codec->calculate_CR(mem->e, sizeof(T), overhead);
+    // }
     if (spline_in_use()) { PSZDBG_LOG("codebook: done"); }
     // if (spline_in_use()){PSZSANITIZE_HIST_BK(mem->ht->hptr(),
     // codec->bk4->hptr(), booklen);}
@@ -191,7 +191,7 @@ COR::compress_rre2(pszctx* ctx, void* stream)
     // if (spline_in_use()) { PSZDBG_LOG("codebook: done"); }
     // if (spline_in_use()){PSZSANITIZE_HIST_BK(mem->ht->hptr(),
     // codec->bk4->hptr(), booklen);}
-    RRE2_COMPRESS((uint32_t*)mem->ectrl(), len, &comp_rre2_out, &comp_rre2_outlen, &rre2_padding_bytes, &time_rre2);
+    RRE2_COMPRESS(mem->ectrl(), len, &comp_rre2_out, &comp_rre2_outlen, &rre2_padding_bytes, &time_rre2);
     // codec->encode(mem->ectrl(), len, &comp_hf_out, &comp_hf_outlen, stream);
     if (spline_in_use()) { PSZDBG_LOG("rre2 encoding done"); }
   }

@@ -300,27 +300,27 @@ void RRE2_DECOMPRESS(uint8_t* input, void** output, size_t rre2_padding_bytes, f
 
   // time GPU decoding
   GPUTimer dtimer;
-  int ddecsize = 0;
+  //int ddecsize = 0;
   dtimer.start();
   d_reset<<<1, 1>>>();
   d_decode<<<blocks, TPB>>>(input, d_decoded, d_decsize);
-  cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
+  //cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
 
   cudaDeviceSynchronize();
   *time = (float)dtimer.stop();
 
-  ddecsize = ddecsize / 2;
-  // Allocate GPU memory for uint16_t array
-  uint32_t* d_input32;
-  cudaMalloc((void**)&d_input32, ddecsize * sizeof(uint32_t));
+  // ddecsize = ddecsize / 2;
+  // // Allocate GPU memory for uint16_t array
+  // uint32_t* d_input32;
+  // cudaMalloc((void**)&d_input32, ddecsize * sizeof(uint32_t));
 
-  // Launch kernel to convert uint32_t to uint16_t  
-  const int num_threads = 256;
-  const int num_blocks = (ddecsize + num_threads - 1) / num_threads;
+  // // Launch kernel to convert uint32_t to uint16_t  
+  // const int num_threads = 256;
+  // const int num_blocks = (ddecsize + num_threads - 1) / num_threads;
 
-  convert_kernel<<<num_blocks, num_threads>>>(d_input32, (uint16_t*)d_decoded, ddecsize);
-  cudaDeviceSynchronize();
-  *output = (void*)d_input32;
+  // convert_kernel<<<num_blocks, num_threads>>>(d_input32, (uint16_t*)d_decoded, ddecsize);
+  // cudaDeviceSynchronize();
+  *output = (void*)d_decoded;
 
   // get decoded GPU result
   // cudaMemcpy(ddecoded, d_decoded, ddecsize, cudaMemcpyDeviceToHost);

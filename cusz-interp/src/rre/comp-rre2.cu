@@ -271,15 +271,15 @@ __global__ void convert_kernel(uint16_t* output, const uint32_t* input, size_t s
   }
 }
 
-void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* outsize, size_t* rre2_padding_bytes, float* time)
+void RRE2_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize, size_t* rre2_padding_bytes, float* time)
 { 
   // Allocate GPU memory for uint16_t array
-  uint16_t* d_input16;
-  cudaMalloc((void**)&d_input16, insize * sizeof(uint16_t));
+  // uint16_t* d_input16;
+  // cudaMalloc((void**)&d_input16, insize * sizeof(uint16_t));
 
-  // Launch kernel to convert uint32_t to uint16_t  
-  const int num_threads = 256;
-  const int num_blocks = (insize + num_threads - 1) / num_threads;
+  // // Launch kernel to convert uint32_t to uint16_t  
+  // const int num_threads = 256;
+  // const int num_blocks = (insize + num_threads - 1) / num_threads;
 
   // auto convert_kernel = [=] __global__ () {
   //   int tid = blockDim.x * blockIdx.x + threadIdx.x;
@@ -288,9 +288,9 @@ void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* out
   //   }
   // };
 
-  convert_kernel<<<num_blocks, num_threads>>>(d_input16, input, insize);
-  cudaDeviceSynchronize();
-  insize = insize * 2;
+  // convert_kernel<<<num_blocks, num_threads>>>(d_input16, input, insize);
+  // cudaDeviceSynchronize();
+  insize = insize * sizeof(uint16_t);
   // printf("GPU LC 1.2 Algorithm: RRE_2\n");
   // printf("Copyright 2024 Texas State University\n\n");
 
@@ -363,7 +363,7 @@ void RRE2_COMPRESS(uint32_t* input, size_t insize, uint8_t** output, size_t* out
   cudaMalloc((void **)&d_fullcarry, chunks * sizeof(int));
   d_reset<<<1, 1>>>();
   cudaMemset(d_fullcarry, 0, chunks * sizeof(int));
-  d_encode<<<blocks, TPB>>>((uint8_t*)d_input16, insize, d_encoded, d_encsize, d_fullcarry);
+  d_encode<<<blocks, TPB>>>((uint8_t*)input, (int)insize, d_encoded, d_encsize, d_fullcarry);
   cudaFree(d_fullcarry);
   cudaDeviceSynchronize();
   *time = (float)dtimer.stop();
