@@ -416,7 +416,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line and line_number > 0 and "rre2" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "kernel" in lines[line_number-3]:
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -435,7 +435,7 @@ class Analysis:
                             compression_ratio_value = float(line_split[index])
                             df.loc[(eb, data_point), 'CR'] = compression_ratio_value
                             df.loc[(eb, data_point), 'BR'] = 32.0 / compression_ratio_value
-                        if "(total)" in line and line_number > 0 and "predict" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "outlier" in lines[line_number-3]:
                             index = line_split.index("(total)") + 2
                             decompression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput
@@ -454,10 +454,10 @@ class Analysis:
                         # if "-bitcomp-" in line:
                         #     bitcomp_line_number.append(line_number)
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_16x16x16data", "cusz::c_spline3d_profiling_data_2", "d_encode", "psz::extrema_kernel"])
+                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_32x8x8data", "cusz::c_spline3d_profiling_data_2", "d_encode", "psz::extrema_kernel"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_xTP', self.data_size, ["d_decode", "cusz::x_spline3d_infprecis_16x16x16data", "psz::extrema_kernel"])
-                    compressed_size = self.data_size / compression_ratio_value
+                          'nsys_cmp_xTP', self.data_size, ["d_decode", "cusz::x_spline3d_infprecis_32x8x8data", "psz::extrema_kernel"])
+                    # compressed_size = self.data_size / compression_ratio_value
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
                     # self.analyze_nvcomp(lines[nvcomp_line_number[0]:nvcomp_line_number[1]], df, (eb, data_point), compressed_size)
                     # self.analyze_bitcomp(lines[bitcomp_line_number[0]:bitcomp_line_number[1]], df, (eb, data_point), compressed_size)

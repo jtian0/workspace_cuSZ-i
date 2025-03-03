@@ -159,6 +159,7 @@ struct TimeRecordViewer {
       auto END = sizeof(h->entry) / sizeof(h->entry[0]);
       return h->entry[END - 1];
     };
+    auto final_compressed_bytes = h->final_compressed_bytes;
 
     auto sizeof_T = [&]() { return (h->dtype == F4 ? 4 : 8); };
     auto uncomp_bytes = h->x * h->y * h->z * sizeof_T();
@@ -185,8 +186,9 @@ struct TimeRecordViewer {
     };
     auto __newline = []() { cout << '\n'; };
 
-    if (comp_bytes() != 0) {
-      auto cr = 1.0 * uncomp_bytes / comp_bytes();
+    printf("--Compression Data after RRE1--\n");
+    if (final_compressed_bytes != 0) {
+      auto cr = 1.0 * uncomp_bytes / final_compressed_bytes;
       __newline();
       __print("psz::comp::review::CR", cr);
     }
@@ -194,6 +196,7 @@ struct TimeRecordViewer {
       cout << "[psz::log::fatal_error] compressed len is zero." << endl;
     }
 
+    printf("--Compression Data before RRE1--\n");
     __print("original::bytes", uncomp_bytes);
     __print("original::bytes", uncomp_bytes);
     __print("compressed::bytes", comp_bytes());

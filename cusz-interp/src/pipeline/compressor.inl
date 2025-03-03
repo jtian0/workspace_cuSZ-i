@@ -175,7 +175,7 @@ COR::compress_encode(pszctx* ctx, void* stream)
   return this;
 }
 
-COR::compress_rre2(pszctx* ctx, void* stream)
+COR::compress_rre1(pszctx* ctx, void* stream)
 {
   auto spline_in_use = [&]() { return ctx->pred_type == Spline; };
   // auto booklen = ctx->radius * 2;
@@ -191,9 +191,9 @@ COR::compress_rre2(pszctx* ctx, void* stream)
     // if (spline_in_use()) { PSZDBG_LOG("codebook: done"); }
     // if (spline_in_use()){PSZSANITIZE_HIST_BK(mem->ht->hptr(),
     // codec->bk4->hptr(), booklen);}
-    RRE2_COMPRESS(mem->ectrl(), len, &comp_rre2_out, &comp_rre2_outlen, &rre2_padding_bytes, &time_rre2);
+    RRE1_COMPRESS(mem->_compressed->dptr(), psz_utils::filesize(&header), &comp_rre1_out, &comp_rre1_outlen, &time_rre1);
     // codec->encode(mem->ectrl(), len, &comp_hf_out, &comp_hf_outlen, stream);
-    if (spline_in_use()) { PSZDBG_LOG("rre2 encoding done"); }
+    if (spline_in_use()) { PSZDBG_LOG("rre1 encoding done"); }
   }
 
   return this;
@@ -211,7 +211,7 @@ COR::compress_update_header(pszctx* ctx, void* stream)
   header.pred_type = ctx->pred_type;
   header.dtype = PszType<T>::type;
   header.intp_param=ctx->intp_param;
-  header.rre2_padding_bytes = rre2_padding_bytes;
+  // header.quant_padding_bytes = quant_padding_bytes;
   // TODO no need to copy header to device
 #if defined(PSZ_USE_CUDA) || defined(PSZ_USE_HIP)
   CHECK_GPU(GpuMemcpyAsync(
@@ -230,10 +230,10 @@ COR::compress_update_header(pszctx* ctx, void* stream)
 COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
-  *out = mem->_compressed->dptr();
-  *outlen = psz_utils::filesize(&header);
-  mem->_compressed->m->len = *outlen;
-  mem->_compressed->m->bytes = *outlen;
+  *out = comp_rre1_out;
+  *outlen = comp_rre1_outlen;
+  mem->_compressed->m->len = psz_utils::filesize(&header);
+  mem->_compressed->m->bytes = psz_utils::filesize(&header);
 
   return this;
 }
@@ -247,9 +247,9 @@ COR::compress(pszctx* ctx, T* in, BYTE** out, size_t* outlen, void* stream)
   compress_predict(ctx, in, stream);
   // compress_histogram(ctx, stream);
   // compress_encode(ctx, stream);
-  compress_rre2(ctx, stream);
   compress_merge(ctx, stream);
   compress_update_header(ctx, stream);
+  compress_rre1(ctx, stream);
   compress_wrapup(out, outlen);
   compress_collect_kerneltime();
 
@@ -289,7 +289,7 @@ try
 
   ////////////////////////////////////////////////////////////////
   nbyte[Header::HEADER] = sizeof(Header);
-  nbyte[Header::VLE] = sizeof(BYTE) * comp_rre2_outlen;
+  nbyte[Header::VLE] = sizeof(BYTE) * ((len + 3) / 4 * 4); // align to 4 bytes
   nbyte[Header::ANCHOR] = pred_type == Spline ? sizeof(T) * mem->ac->len() : 0;
   nbyte[Header::SPFMT] = (sizeof(T) + sizeof(M)) * splen;
 
@@ -301,7 +301,8 @@ try
 
   // copy anchor
   if (pred_type == Spline) concat_d2d(Header::ANCHOR, mem->anchor(), 0);
-  concat_d2d(Header::VLE, comp_rre2_out, 0);
+  CHECK_GPU(GpuMemcpyAsync(dst(Header::VLE, 0), mem->ectrl(), len, GpuMemcpyD2D, (GpuStreamT)stream));
+  // concat_d2d(Header::VLE, comp_rre1_out, 0);
 
 #if defined(PSZ_USE_CUDA) || defined(PSZ_USE_HIP)
   CHECK_GPU(GpuMemcpyAsync(
@@ -382,6 +383,7 @@ COR::decompress_predict(
         "[psz::error] One of external in and ext_anchor must be null.");
 
   auto d_anchor = ext_anchor ? ext_anchor : (T*)access(Header::ANCHOR);
+  mem->e->m->d = access(Header::VLE);
   // wire and aliasing
   auto d_space = out;
   auto d_xdata = out;
@@ -428,13 +430,13 @@ COR::decompress_decode(pszheader* header, BYTE* in, uninit_stream_t stream)
   return this;
 }
 
-COR::decompress_rre2(pszheader* header, BYTE* in, uninit_stream_t stream)
+COR::decompress_rre1(pszheader* header, BYTE* in, uninit_stream_t stream)
 {
-  auto access = [&](int FIELD, szt offset_nbyte = 0) {
-    return (void*)(in + header->entry[FIELD] + offset_nbyte);
-  };
-  RRE2_DECOMPRESS((uint8_t*)access(Header::VLE), &mem->e->m->d, header->rre2_padding_bytes, &time_rre2);
-  return this;
+  // auto access = [&](int FIELD, szt offset_nbyte = 0) {
+  //   return (void*)(in + header->entry[FIELD] + offset_nbyte);
+  // };
+  // RRE1_DECOMPRESS((uint8_t*)access(Header::VLE), &mem->e->m->d, header->rre1_padding_bytes, &time_rre1);
+  // return this;
 }
 
 COR::decompress_scatter(
@@ -475,7 +477,7 @@ COR::decompress(pszheader* header, BYTE* in, T* out, void* stream)
 
   decompress_scatter(header, in, d_space, stream);
   // decompress_decode(header, in, stream);
-  decompress_rre2(header, in, stream);
+  // decompress_rre1(header, in, stream);
   decompress_predict(header, in, nullptr, d_xdata, stream);
   decompress_collect_kerneltime();
 
@@ -509,7 +511,7 @@ COR::compress_collect_kerneltime()
   if (not timerecord.empty()) timerecord.clear();
 
   COLLECT_TIME("predict", time_pred);
-  COLLECT_TIME("rre2", time_rre2);
+  COLLECT_TIME("rre1", time_rre1);
   // COLLECT_TIME("histogram", time_hist);
   // COLLECT_TIME("book", codec->time_book());
   // COLLECT_TIME("huff-enc", codec->time_lossless());
@@ -523,7 +525,6 @@ COR::decompress_collect_kerneltime()
   if (not timerecord.empty()) timerecord.clear();
 
   COLLECT_TIME("outlier", time_sp);
-  COLLECT_TIME("rre2", time_rre2);
   COLLECT_TIME("predict", time_pred);
 
   return this;

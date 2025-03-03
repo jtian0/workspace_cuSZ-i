@@ -1,4 +1,4 @@
 #pragma once
 
-void RRE2_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize, size_t* rre2_padding_bytes, float* time);
-void RRE2_DECOMPRESS(uint8_t* input, void** output, size_t rre2_padding_bytes, float* time);
+void RRE1_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize, float* time);
+void RRE1_DECOMPRESS(void* input, uint8_t** output, int size_before_rre1, float* time);

@@ -28,6 +28,7 @@
 #include "utils/err.hh"
 #include "utils/query.hh"
 #include "utils/viewer.hh"
+#include "rre/rre.h"
 
 namespace cusz {
 
@@ -143,6 +144,7 @@ class CLI {
     psz_compress(
         compressor, input->dptr(), uncomp_len, &compressed, &compressed_len,
         &header, (void*)&timerecord, stream);
+    header.final_compressed_bytes = compressed_len;
 
     printf("\n(c) COMPRESSION REPORT\n");
 
@@ -173,9 +175,16 @@ class CLI {
         ->file(ctx->infile, FromFile)
         ->control({H2D});
 
+    int size_before_rre1;
+    memcpy(&size_before_rre1, compressed->hptr(), sizeof(int));
+    uint8_t* compressed_before_rre1;
+    float decompress_time_rre1;
+    RRE1_DECOMPRESS(compressed->dptr(), &compressed_before_rre1, size_before_rre1, &decompress_time_rre1);
+
     auto header = new psz_header;
-    memcpy(header, compressed->hptr(), sizeof(psz_header));
+    cudaMemcpy(header, compressed_before_rre1, sizeof(psz_header), cudaMemcpyDeviceToHost);
     auto len = psz_utils::uncompressed_len(header);
+    header->final_compressed_bytes = compressed_len;
 
     auto decompressed = new pszmem_cxx<T>(len, 1, 1, "decompressed");
     decompressed->control({MallocHost, Malloc});
@@ -190,9 +199,10 @@ class CLI {
     //compressor->header->intp_param = ctx->intp_param;
     
     psz_decompress(
-        compressor, compressed->dptr(), psz_utils::filesize(header),
+        compressor, compressed_before_rre1, psz_utils::filesize(header),
         decompressed->dptr(), decomp_len, (void*)&timerecord, stream);
 
+    timerecord.push_back({const_cast<const char*>("rre1"), decompress_time_rre1});
     if (ctx->report_time)
       psz::TimeRecordViewer::view_decompression(
           &timerecord, decompressed->m->bytes);

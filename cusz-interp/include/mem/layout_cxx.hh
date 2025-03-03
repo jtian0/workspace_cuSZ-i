@@ -72,10 +72,10 @@ TPL POOL::pszmempool_cxx(u4 x, int _radius, u4 y, u4 z)
   auto pad = [&](auto _l, auto unit) { return unit * div(_l, unit); };
 
   // for spline
-  constexpr auto BLK = 16;
+  constexpr auto BLK = 8;
   constexpr auto ERR_HISTO_LEN = 6;
 
-  _compressed = new pszmem_cxx<B>(len * 1.2, 1, 1, "compressed");
+  _compressed = new pszmem_cxx<B>(len * 12, 1, 1, "compressed");
 
   od = new pszmem_cxx<T>(x, y, z, "original data");
   xd = new pszmem_cxx<T>(x, y, z, "reconstructed data");
