@@ -392,9 +392,18 @@ class Analysis:
                     file_content = file.read()
                     lines = file_content.splitlines()
 
-                    # Check if file is valid by looking at 3rd line
-                    if len(lines) < 3 or lines[2] != "(c) COMPRESSION REPORT":
-                        # Skip this file and leave data empty
+                    # Check if file has both compression and decompression reports
+                    has_compression = False
+                    has_decompression = False
+                    for line in lines:
+                        if line.startswith("(c)"):
+                            has_compression = True
+                        elif line.startswith("(d)"):
+                            has_decompression = True
+                        if has_compression and has_decompression:
+                            break
+                    if not has_compression or not has_decompression:
+                        # Skip if missing either compression or decompression report
                         continue
 
                     compareDATA_line_number = []
@@ -440,12 +449,12 @@ class Analysis:
                             compareDATA_line_number.append(line_number)
 
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_32x8x8data", "psz::detail::hf_encode_phase2_deflate", 
+                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_16x16x16data", "psz::detail::hf_encode_phase2_deflate", 
                                         "histsp_multiwarp", "psz::detail::hf_encode_phase1_fill", "psz::extrema_kernel", "psz::detail::hf_encode_phase4_concatenate",
                                         "d_encode", "cusz::c_spline3d_profiling_data_2"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
                           'nsys_cmp_xTP', self.data_size, ["hf_decode_kernel", 
-                                        "cusz::x_spline3d_infprecis_32x8x8data", "psz::extrema_kernel", "d_decode"])
+                                        "cusz::x_spline3d_infprecis_16x16x16data", "psz::extrema_kernel", "d_decode"])
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
 
                 except Exception as e:
