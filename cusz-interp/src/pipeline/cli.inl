@@ -105,7 +105,7 @@ class CLI {
   void write_compressed_to_disk(
       std::string compressed_name, uint8_t* compressed, size_t compressed_len)
   {
-    auto file = new pszmem_cxx<uint8_t>(compressed_len, 1, 1, "cusza");
+    auto file = new pszmem_cxx<uint8_t>(compressed_len, 1, 1, "quant_u1");
     file->dptr(compressed)
         ->control({MallocHost, D2H})
         ->file(compressed_name.c_str(), ToFile);
@@ -144,16 +144,16 @@ class CLI {
     psz_compress(
         compressor, input->dptr(), uncomp_len, &compressed, &compressed_len,
         &header, (void*)&timerecord, stream);
-    header.final_compressed_bytes = compressed_len;
+    // header.final_compressed_bytes = compressed_len;
 
-    printf("\n(c) COMPRESSION REPORT\n");
+    // printf("\n(c) COMPRESSION REPORT\n");
 
-    if (ctx->report_time)
-      psz::TimeRecordViewer::view_timerecord(&timerecord, &header);
-    if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
+    // if (ctx->report_time)
+    //   psz::TimeRecordViewer::view_timerecord(&timerecord, &header);
+    // if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
 
     write_compressed_to_disk(
-        std::string(ctx->infile) + ".cusza", compressed, compressed_len);
+        std::string(ctx->infile) + "." + std::to_string(ctx->rel_eb) + ".quant_u1", compressed, ctx->x*ctx->y*ctx->z);
 
     delete input;
   }

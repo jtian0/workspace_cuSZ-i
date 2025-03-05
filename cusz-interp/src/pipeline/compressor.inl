@@ -245,13 +245,14 @@ COR::compress(pszctx* ctx, T* in, BYTE** out, size_t* outlen, void* stream)
   PSZSANITIZE_PSZCTX(ctx);
 
   compress_predict(ctx, in, stream);
+  *out = mem->ectrl();
   // compress_histogram(ctx, stream);
   // compress_encode(ctx, stream);
-  compress_merge(ctx, stream);
-  compress_update_header(ctx, stream);
-  compress_rre1(ctx, stream);
-  compress_wrapup(out, outlen);
-  compress_collect_kerneltime();
+  // compress_merge(ctx, stream);
+  // compress_update_header(ctx, stream);
+  // compress_rre1(ctx, stream);
+  // compress_wrapup(out, outlen);
+  // compress_collect_kerneltime();
 
   return this;
 }

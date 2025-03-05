@@ -82,8 +82,8 @@ pszerror psz_compress(
 
     cor->compress(
         comp->ctx, (f4*)(in), compressed, comp_bytes, stream);
-    cor->export_header(*header);
-    cor->export_timerecord((psz::TimeRecord*)record);
+    // cor->export_header(*header);
+    // cor->export_timerecord((psz::TimeRecord*)record);
   }
   else {
     throw std::runtime_error(
