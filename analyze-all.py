@@ -416,7 +416,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line and line_number > 0 and "rre2" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "difflog" in lines[line_number-1]:
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -456,8 +456,8 @@ class Analysis:
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
                           'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_16x16x16data", "cusz::c_spline3d_profiling_data_2", "d_encode", "psz::extrema_kernel"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_xTP', self.data_size, ["d_decode", "cusz::x_spline3d_infprecis_16x16x16data", "psz::extrema_kernel"])
-                    compressed_size = self.data_size / compression_ratio_value
+                          'nsys_cmp_xTP', self.data_size, ["d_decode", "cusz::x_spline3d_infprecis_16x16x16data", "psz::extrema_kernel", "psz::cu_hip::spvn_scatter"])
+                    # compressed_size = self.data_size / compression_ratio_value
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
                     # self.analyze_nvcomp(lines[nvcomp_line_number[0]:nvcomp_line_number[1]], df, (eb, data_point), compressed_size)
                     # self.analyze_bitcomp(lines[bitcomp_line_number[0]:bitcomp_line_number[1]], df, (eb, data_point), compressed_size)
