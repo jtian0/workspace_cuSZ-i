@@ -230,10 +230,10 @@ COR::compress_update_header(pszctx* ctx, void* stream)
 COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
-  *out = comp_rre1_out;
-  *outlen = comp_rre1_outlen;
-  mem->_compressed->m->len = psz_utils::filesize(&header);
-  mem->_compressed->m->bytes = psz_utils::filesize(&header);
+  *out = mem->compressed();
+  *outlen = nbyte[Header::ANCHOR] + nbyte[Header::SPFMT];
+  // mem->_compressed->m->len = psz_utils::filesize(&header);
+  // mem->_compressed->m->bytes = psz_utils::filesize(&header);
 
   return this;
 }
@@ -245,13 +245,13 @@ COR::compress(pszctx* ctx, T* in, BYTE** out, size_t* outlen, void* stream)
   PSZSANITIZE_PSZCTX(ctx);
 
   compress_predict(ctx, in, stream);
-  *out = mem->ectrl();
+  // *out = mem->ectrl();
   // compress_histogram(ctx, stream);
   // compress_encode(ctx, stream);
-  // compress_merge(ctx, stream);
+  compress_merge(ctx, stream);
   // compress_update_header(ctx, stream);
   // compress_rre1(ctx, stream);
-  // compress_wrapup(out, outlen);
+  compress_wrapup(out, outlen);
   // compress_collect_kerneltime();
 
   return this;
@@ -301,16 +301,17 @@ try
     header.entry[i] += header.entry[i - 1];
 
   // copy anchor
-  if (pred_type == Spline) concat_d2d(Header::ANCHOR, mem->anchor(), 0);
-  CHECK_GPU(GpuMemcpyAsync(dst(Header::VLE, 0), mem->ectrl(), len, GpuMemcpyD2D, (GpuStreamT)stream));
+  // if (pred_type == Spline) concat_d2d(Header::ANCHOR, mem->anchor(), 0);
+  CHECK_GPU(GpuMemcpyAsync((void*)mem->compressed(), mem->anchor(), nbyte[Header::ANCHOR], GpuMemcpyD2D, (GpuStreamT)stream));
+  // CHECK_GPU(GpuMemcpyAsync(dst(Header::VLE, 0), mem->ectrl(), len, GpuMemcpyD2D, (GpuStreamT)stream));
   // concat_d2d(Header::VLE, comp_rre1_out, 0);
 
 #if defined(PSZ_USE_CUDA) || defined(PSZ_USE_HIP)
   CHECK_GPU(GpuMemcpyAsync(
-      dst(Header::SPFMT, 0), mem->compact_val(), sizeof(T) * splen,
+      (void*)(mem->compressed() + nbyte[Header::ANCHOR]), mem->compact_val(), sizeof(T) * splen,
       GpuMemcpyD2D, (GpuStreamT)stream));
   CHECK_GPU(GpuMemcpyAsync(
-      dst(Header::SPFMT, sizeof(T) * splen), mem->compact_idx(),
+      (void*)(mem->compressed() + nbyte[Header::ANCHOR]+ sizeof(T) * splen), mem->compact_idx(),
       sizeof(M) * splen, GpuMemcpyD2D, (GpuStreamT)stream));
   /* debug */ CHECK_GPU(GpuStreamSync(stream));
 #elif defined(PSZ_USE_1API)

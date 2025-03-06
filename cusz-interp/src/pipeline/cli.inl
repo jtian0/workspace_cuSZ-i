@@ -153,7 +153,7 @@ class CLI {
     // if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
 
     write_compressed_to_disk(
-        std::string(ctx->infile) + "." + std::to_string(ctx->rel_eb) + ".quant_u1", compressed, ctx->x*ctx->y*ctx->z);
+        std::string(ctx->infile) + "." + std::to_string(ctx->rel_eb) + ".anchlier", compressed, compressed_len);
 
     delete input;
   }
