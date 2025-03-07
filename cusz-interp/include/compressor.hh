@@ -57,7 +57,7 @@ class Compressor {
   // external codec that has standalone internals
   Codec* codec;
 
-  float time_pred, time_hist, time_sp, time_rre2;
+  float time_pred, time_hist, time_sp, time_diffbit;
 
   size_t len;
   int splen;
@@ -65,9 +65,9 @@ class Compressor {
   BYTE* comp_hf_out{nullptr};
   size_t comp_hf_outlen{0};
 
-  BYTE* comp_rre2_out{nullptr};
-  size_t comp_rre2_outlen{0};
-  size_t rre2_padding_bytes{0};
+  BYTE* comp_diffbit_out{nullptr};
+  size_t comp_diffbit_outlen{0};
+  size_t diffbit_padding_bytes{0};
 
   // configs
   float outlier_density{0.2};
@@ -89,7 +89,7 @@ class Compressor {
   Compressor* compress_predict(pszctx*, T*, uninit_stream_t);
   Compressor* compress_histogram(pszctx*, uninit_stream_t);
   Compressor* compress_encode(pszctx*, uninit_stream_t);
-  Compressor* compress_rre2(pszctx*, uninit_stream_t);
+  Compressor* compress_diffbit(pszctx*, uninit_stream_t);
   Compressor* compress_merge(pszctx*, void*);
   Compressor* compress_update_header(pszctx*, uninit_stream_t);
   Compressor* compress_wrapup(BYTE** out, szt* outlen);
@@ -98,7 +98,7 @@ class Compressor {
   Compressor* decompress(pszheader*, BYTE*, T*, uninit_stream_t);
   Compressor* decompress_scatter(pszheader*, BYTE*, T*, uninit_stream_t);
   Compressor* decompress_decode(pszheader*, BYTE*, uninit_stream_t);
-  Compressor* decompress_rre2(pszheader*, BYTE*, uninit_stream_t);
+  Compressor* decompress_diffbit(pszheader*, BYTE*, uninit_stream_t);
   Compressor* decompress_predict(pszheader*, BYTE*, T*, T*, uninit_stream_t);
   Compressor* decompress_collect_kerneltime();
 
