@@ -230,8 +230,8 @@ COR::compress_update_header(pszctx* ctx, void* stream)
 COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
-  *out = mem->compressed();
-  *outlen = nbyte[Header::ANCHOR];
+  *out = mem->compressed() + nbyte[Header::ANCHOR];
+  *outlen = nbyte[Header::SPFMT];
   // mem->_compressed->m->len = psz_utils::filesize(&header);
   // mem->_compressed->m->bytes = psz_utils::filesize(&header);
 

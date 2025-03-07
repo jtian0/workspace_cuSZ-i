@@ -151,9 +151,10 @@ class CLI {
     // if (ctx->report_time)
     //   psz::TimeRecordViewer::view_timerecord(&timerecord, &header);
     // if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
-
-    write_compressed_to_disk(
-        std::string(ctx->infile) + "." + std::to_string(ctx->rel_eb) + ".anchor", compressed, compressed_len);
+    if (compressed_len > 0) {
+      write_compressed_to_disk(
+          std::string(ctx->infile) + "." + std::to_string(ctx->rel_eb) + ".outlier", compressed, compressed_len);
+    }
 
     delete input;
   }
