@@ -231,7 +231,7 @@ COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
   *out = mem->compressed();
-  *outlen = nbyte[Header::ANCHOR] + nbyte[Header::SPFMT];
+  *outlen = nbyte[Header::ANCHOR];
   // mem->_compressed->m->len = psz_utils::filesize(&header);
   // mem->_compressed->m->bytes = psz_utils::filesize(&header);
 
