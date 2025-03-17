@@ -57,7 +57,7 @@ class Compressor {
   // external codec that has standalone internals
   Codec* codec;
 
-  float time_pred, time_hist, time_sp, time_tcms;
+  float time_pred, time_hist, time_sp, time_tcms, time_bitr;
 
   size_t len;
   int splen;
@@ -68,6 +68,12 @@ class Compressor {
   BYTE* comp_tcms_out{nullptr};
   size_t comp_tcms_outlen{0};
   size_t tcms_padding_bytes{0};
+
+  BYTE* comp_bitr_out{nullptr};
+  size_t comp_bitr_outlen{0};
+  size_t bitr_padding_bytes{0};
+
+  T* device_anchor{nullptr};
 
   // configs
   float outlier_density{0.2};

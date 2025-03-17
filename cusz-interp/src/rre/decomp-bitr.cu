@@ -59,7 +59,9 @@ static const int TPB = 512;  // threads per block [must be power of 2 and at lea
 #include "rre/sum_reduction.h"
 #include "rre/max_scan.h"
 #include "rre/prefix_sum.h"
-#include "rre/d_RRE_2.h"
+#include "rre/components/d_BIT_4.h"
+#include "rre/components/d_RRE_2.h"
+#include "rre/components/d_RZE_1.h"
 #include "rre/rre.h"
 
 
@@ -131,7 +133,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_decode(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
+void d_decode_bitr(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -185,7 +187,13 @@ void d_decode(const byte* const __restrict__ input, byte* const __restrict__ out
     if (csize < osize) {
       byte* tmp;
      tmp = in; in = out; out = tmp;
+      d_iRZE_1(csize, in, out,temp);
+      __syncthreads();
+     tmp = in; in = out; out = tmp;
       d_iRRE_2(csize, in, out,temp);
+      __syncthreads();
+     tmp = in; in = out; out = tmp;
+      d_iBIT_4(csize, in, out,temp);
       __syncthreads();
      }
 
@@ -225,19 +233,12 @@ static void CheckCuda(const int line)
   }
 }
 
-__global__ void convert_kernel(uint32_t* output, const uint16_t* input, size_t size) {
-  int tid = blockDim.x * blockIdx.x + threadIdx.x;
-  if(tid < size) {
-    output[tid] = (uint32_t)input[tid]; 
-  }
-}
 
-void RRE2_DECOMPRESS(uint8_t* input, void** output, size_t rre2_padding_bytes, float* time)
+void BITR_DECOMPRESS(uint8_t* input, void** output, size_t bitr_padding_bytes, float* time)
 { 
-  // read first int from GPU memory to CPU
   int pre_size;
   cudaMemcpy(&pre_size, input, sizeof(int), cudaMemcpyDeviceToHost);
-  // printf("GPU LC 1.2 Algorithm: RRE_2\n");
+  // printf("GPU LC 1.2 Algorithm: BIT_4 RRE_2 RZE_1\n");
   // printf("Copyright 2024 Texas State University\n\n");
 
   // // read input from file
@@ -293,33 +294,21 @@ void RRE2_DECOMPRESS(uint8_t* input, void** output, size_t rre2_padding_bytes, f
   cudaMalloc((void **)&d_decoded_dummy, pre_size);
   int* d_decsize_dummy;
   cudaMalloc((void **)&d_decsize_dummy, sizeof(int));
-  d_decode<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
+  d_decode_bitr<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
   cudaFree(d_decoded_dummy);
   cudaFree(d_decsize_dummy);
-
+  
 
   // time GPU decoding
   GPUTimer dtimer;
   //int ddecsize = 0;
   dtimer.start();
   d_reset<<<1, 1>>>();
-  d_decode<<<blocks, TPB>>>(input, d_decoded, d_decsize);
+  d_decode_bitr<<<blocks, TPB>>>(input, d_decoded, d_decsize);
   //cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
 
   cudaDeviceSynchronize();
   *time = (float)dtimer.stop();
-
-  // ddecsize = ddecsize / 2;
-  // // Allocate GPU memory for uint16_t array
-  // uint32_t* d_input32;
-  // cudaMalloc((void**)&d_input32, ddecsize * sizeof(uint32_t));
-
-  // // Launch kernel to convert uint32_t to uint16_t  
-  // const int num_threads = 256;
-  // const int num_blocks = (ddecsize + num_threads - 1) / num_threads;
-
-  // convert_kernel<<<num_blocks, num_threads>>>(d_input32, (uint16_t*)d_decoded, ddecsize);
-  // cudaDeviceSynchronize();
   *output = (void*)d_decoded;
 
   // get decoded GPU result

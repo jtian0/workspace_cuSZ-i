@@ -201,9 +201,9 @@ struct TimeRecordViewer {
     __print_perc("compressed::total::bytes", comp_bytes());
     printf("  ------------------------\n");
     __print_perc("compressed::HEADER::bytes", sizeof(pszheader));
-    __print_perc("compressed::ANCHOR::bytes", fieldsize(pszheader::ANCHOR));
+    __print_perc("compressed::ANCHOR+SPFMT::bytes", h->entry[pszheader::END+1] - h->entry[pszheader::ANCHOR]);
     __print_perc("compressed::VLE::bytes", fieldsize(pszheader::VLE));
-    __print_perc("compressed::SPFMT::bytes", fieldsize(pszheader::SPFMT));
+    // __print_perc("compressed::SPFMT::bytes", fieldsize(pszheader::SPFMT));
     __newline();
     __print(
         "compressed::ANCHOR:::len", fieldsize(pszheader::ANCHOR) / sizeof_T());

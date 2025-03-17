@@ -277,7 +277,7 @@ if __name__ == '__main__':
     
     
     datafiles=os.listdir(datafolder)
-    datafiles=[file for file in datafiles if file.split(".")[-1]=="dat" or file.split(".")[-1]=="f32" or file.split(".")[-1]=="bin"]
+    datafiles=[file for file in datafiles if (file.split(".")[-1]=="dat" or file.split(".")[-1]=="f32" or file.split(".")[-1]=="bin") and "log" not in file]
     
     if not os.path.exists(outputfolder):
         os.makedirs(outputfolder)

@@ -33,7 +33,7 @@ class Analysis:
         self.eb_list = eb_list or ['1e-2', '5e-3', '1e-3', '5e-4', '1e-4', '5e-5', '1e-5']
         self.br_list = br_list or ['0.5', '1', '2', '4', '6', '8', '12', '16']
 
-        self.datafiles = os.listdir(self.data_folder)
+        self.datafiles = [file for file in os.listdir(self.data_folder) if "log" not in file]
         
         #self.datapoint_list = list(set([file.split(".")[0] for file in self.datafiles]))
         self.datapoint_list = list(set([file.split("=")[0] for file in self.datafiles]))

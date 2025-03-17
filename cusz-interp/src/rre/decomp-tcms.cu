@@ -133,7 +133,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_decode(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
+void d_decode_tcms(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -294,7 +294,7 @@ void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, f
   cudaMalloc((void **)&d_decoded_dummy, pre_size);
   int* d_decsize_dummy;
   cudaMalloc((void **)&d_decsize_dummy, sizeof(int));
-  d_decode<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
+  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
   cudaFree(d_decoded_dummy);
   cudaFree(d_decsize_dummy);
   
@@ -304,7 +304,7 @@ void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, f
   //int ddecsize = 0;
   dtimer.start();
   d_reset<<<1, 1>>>();
-  d_decode<<<blocks, TPB>>>(input, d_decoded, d_decsize);
+  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded, d_decsize);
   //cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
 
   cudaDeviceSynchronize();

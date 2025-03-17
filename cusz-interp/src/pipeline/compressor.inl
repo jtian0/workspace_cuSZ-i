@@ -212,6 +212,7 @@ COR::compress_update_header(pszctx* ctx, void* stream)
   header.dtype = PszType<T>::type;
   header.intp_param=ctx->intp_param;
   header.tcms_padding_bytes = tcms_padding_bytes;
+  header.bitr_padding_bytes = bitr_padding_bytes;
   // TODO no need to copy header to device
 #if defined(PSZ_USE_CUDA) || defined(PSZ_USE_HIP)
   CHECK_GPU(GpuMemcpyAsync(
@@ -231,7 +232,7 @@ COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
   *out = mem->_compressed->dptr();
-  *outlen = psz_utils::filesize(&header);
+  *outlen = nbyte[Header::HEADER] + nbyte[Header::VLE] + comp_bitr_outlen;
   mem->_compressed->m->len = *outlen;
   mem->_compressed->m->bytes = *outlen;
 
@@ -321,6 +322,11 @@ try
   /* debug */ queue->wait();
 #endif
 
+  BITR_COMPRESS(dst(Header::ANCHOR), nbyte[Header::ANCHOR]+nbyte[Header::SPFMT], &comp_bitr_out, &comp_bitr_outlen, &bitr_padding_bytes, &time_bitr);
+  CHECK_GPU(GpuMemcpyAsync(dst(Header::ANCHOR), comp_bitr_out, comp_bitr_outlen, GpuMemcpyD2D, (GpuStreamT)stream));
+  CHECK_GPU(GpuStreamSync(stream));
+  header.entry[Header::END+1] = header.entry[Header::ANCHOR] + comp_bitr_outlen;
+
   if (spline_in_use()) { PSZDBG_LOG("merge buf: done"); }
 
   return this;
@@ -381,7 +387,7 @@ COR::decompress_predict(
     throw std::runtime_error(
         "[psz::error] One of external in and ext_anchor must be null.");
 
-  auto d_anchor = ext_anchor ? ext_anchor : (T*)access(Header::ANCHOR);
+  auto d_anchor = ext_anchor ? ext_anchor : device_anchor;
   // wire and aliasing
   auto d_space = out;
   auto d_xdata = out;
@@ -443,11 +449,13 @@ COR::decompress_scatter(
   auto access = [&](int FIELD, szt offset_nbyte = 0) {
     return (void*)(in + header->entry[FIELD] + offset_nbyte);
   };
-
-  // The inputs of components are from `compressed`.
-  auto d_anchor = (T*)access(Header::ANCHOR);
-  auto d_spval = (T*)access(Header::SPFMT);
-  auto d_spidx = (M*)access(Header::SPFMT, header->splen * sizeof(T));
+  void* decompressed_data = nullptr;
+  BITR_DECOMPRESS((uint8_t*)access(Header::ANCHOR), &decompressed_data, header->bitr_padding_bytes, &time_bitr);
+  
+  // Update pointers to use the temporary buffer
+  device_anchor = (T*)decompressed_data;
+  auto d_spval = (T*)(((uint8_t*)decompressed_data) + (header->entry[Header::SPFMT] - header->entry[Header::ANCHOR]));
+  auto d_spidx = (M*)(((uint8_t*)decompressed_data) + (header->entry[Header::SPFMT] - header->entry[Header::ANCHOR]) + header->splen * sizeof(T));
 
   psz::spv_scatter_naive<PROPER_GPU_BACKEND, T, M>(
       d_spval, d_spidx, header->splen, d_space, &time_sp, stream);
@@ -510,6 +518,7 @@ COR::compress_collect_kerneltime()
 
   COLLECT_TIME("predict", time_pred);
   COLLECT_TIME("tcms", time_tcms);
+  COLLECT_TIME("bitr", time_bitr);
   // COLLECT_TIME("histogram", time_hist);
   // COLLECT_TIME("book", codec->time_book());
   // COLLECT_TIME("huff-enc", codec->time_lossless());
@@ -525,6 +534,7 @@ COR::decompress_collect_kerneltime()
   COLLECT_TIME("outlier", time_sp);
   COLLECT_TIME("tcms", time_tcms);
   COLLECT_TIME("predict", time_pred);
+  COLLECT_TIME("bitr", time_bitr);
 
   return this;
 }

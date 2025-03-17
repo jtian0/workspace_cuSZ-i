@@ -165,7 +165,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_encode(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
+void d_encode_tcms(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -315,7 +315,7 @@ void TCMS_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize
   const int blocks = SMs * (mTpSM / TPB);
   const int chunks = (insize + CS - 1) / CS;  // round up
   CheckCuda(__LINE__);
-  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS + 3;
+  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS + 7;
 
   // allocate GPU memory
   // byte* dencoded;
@@ -351,7 +351,7 @@ void TCMS_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize
   cudaMalloc((void **)&d_fullcarry, chunks * sizeof(int));
   d_reset<<<1, 1>>>();
   cudaMemset(d_fullcarry, 0, chunks * sizeof(int));
-  d_encode<<<blocks, TPB>>>((uint8_t*)input, (int)insize, d_encoded, d_encsize, d_fullcarry);
+  d_encode_tcms<<<blocks, TPB>>>((uint8_t*)input, (int)insize, d_encoded, d_encsize, d_fullcarry);
   cudaFree(d_fullcarry);
   cudaDeviceSynchronize();
   *time = (float)dtimer.stop();
@@ -361,7 +361,7 @@ void TCMS_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize
   cudaMemcpy(&dencsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
     
   // Calculate padding needed for 4-byte alignment
-  size_t padding = (4 - (dencsize % 4)) % 4;
+  size_t padding = (8 - (dencsize % 8)) % 8;
   *tcms_padding_bytes = padding;
   
   // Round up size to 4-byte alignment
