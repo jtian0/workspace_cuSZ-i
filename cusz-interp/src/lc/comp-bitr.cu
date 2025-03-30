@@ -36,6 +36,7 @@ URL: The latest version of this code is available at https://github.com/burtsche
 Sponsor: This code is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Research (ASCR), under contract DE-SC0022223.
 */
 
+
 #ifndef NDEBUG
 #define NDEBUG
 #endif
@@ -55,13 +56,13 @@ static const int TPB = 512;  // threads per block [must be power of 2 and at lea
 #include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include "rre/sum_reduction.h"
-#include "rre/max_scan.h"
-#include "rre/prefix_sum.h"
-#include "rre/components/d_TCMS_1.h"
-#include "rre/components/d_BIT_1.h"
-#include "rre/components/d_RRE_1.h"
-#include "rre/rre.h"
+#include "lc/sum_reduction.h"
+#include "lc/max_scan.h"
+#include "lc/prefix_sum.h"
+#include "lc/components/d_BIT_4.h"
+#include "lc/components/d_RRE_2.h"
+#include "lc/components/d_RZE_1.h"
+#include "lc/lc.h"
 
 // copy (len) bytes from shared memory (source) to global memory (destination)
 // source must we word aligned
@@ -165,7 +166,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_encode_tcms(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
+void d_encode_bitr(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -210,17 +211,17 @@ void d_encode_tcms(const byte* const __restrict__ input, const int insize, byte*
     bool good = true;
     if (good) {
       byte* tmp = in; in = out; out = tmp;
-      good = d_TCMS_1(csize, in, out, temp);
+      good = d_BIT_4(csize, in, out, temp);
      __syncthreads();
     }
     if (good) {
       byte* tmp = in; in = out; out = tmp;
-      good = d_BIT_1(csize, in, out, temp);
+      good = d_RRE_2(csize, in, out, temp);
      __syncthreads();
     }
     if (good) {
       byte* tmp = in; in = out; out = tmp;
-      good = d_RRE_1(csize, in, out, temp);
+      good = d_RZE_1(csize, in, out, temp);
      __syncthreads();
     }
 
@@ -277,34 +278,8 @@ static void CheckCuda(const int line)
 }
 
 
-void TCMS_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize, size_t* tcms_padding_bytes, float* time)
+void BITR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, size_t* bitr_padding_bytes, float* time, void* stream)
 {
-  // printf("GPU LC 1.2 Algorithm: TCMS_1 BIT_1 RRE_1\n");
-  // printf("Copyright 2024 Texas State University\n\n");
-
-  // read input from file
-  // if (argc < 3) {printf("USAGE: %s input_file_name compressed_file_name [performance_analysis (y)]\n\n", argv[0]); return -1;}
-  // FILE* const fin = fopen(argv[1], "rb");
-  // fseek(fin, 0, SEEK_END);
-  // const long long fsize = ftell(fin);
-  // if (fsize <= 0) {fprintf(stderr, "ERROR: input file too small\n\n"); throw std::runtime_error("LC error");}
-  // if (fsize >= 2147221529) {fprintf(stderr, "ERROR: input file too large\n\n"); throw std::runtime_error("LC error");}
-  // byte* const input = new byte [fsize];
-  // fseek(fin, 0, SEEK_SET);
-  // const int insize = fread(input, 1, fsize, fin);  assert(insize == fsize);
-  // fclose(fin);
-  // printf("original size: %d bytes\n", insize);
-
-  // Check if the third argument is "y" to enable performance analysis
-  // char* perf_str = argv[3];
-  // bool perf = false;
-  // if (perf_str != nullptr && strcmp(perf_str, "y") == 0) {
-  //   perf = true;
-  // } else if (perf_str != nullptr && strcmp(perf_str, "y") != 0) {
-  //   fprintf(stderr, "ERROR: Invalid argument. Use 'y' or nothing.\n");
-  //   throw std::runtime_error("LC error");
-  // }
-
   // get GPU info
   cudaSetDevice(0);
   cudaDeviceProp deviceProp;
@@ -317,83 +292,36 @@ void TCMS_COMPRESS(void* input, size_t insize, uint8_t** output, size_t* outsize
   CheckCuda(__LINE__);
   const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS + 7;
 
-  // allocate GPU memory
-  // byte* dencoded;
-  // cudaMallocHost((void **)&dencoded, maxsize);
-  // byte* d_input;
-  // cudaMalloc((void **)&d_input, insize);
-  // cudaMemcpy(d_input, input, insize, cudaMemcpyHostToDevice);
   byte* d_encoded;
   cudaMalloc((void **)&d_encoded, maxsize);
   int* d_encsize;
   cudaMalloc((void **)&d_encsize, sizeof(int));
   CheckCuda(__LINE__);
 
-  // byte* dpreencdata;
-  // cudaMalloc((void **)&dpreencdata, insize);
-  // cudaMemcpy(dpreencdata, d_input, insize, cudaMemcpyDeviceToDevice);
-  // int dpreencsize = insize;
 
-  // if (perf) {
-  //   int* d_fullcarry;
-  //   cudaMalloc((void **)&d_fullcarry, chunks * sizeof(int));
-  //   d_reset<<<1, 1>>>();
-  //   cudaMemset(d_fullcarry, 0, chunks * sizeof(int));
-  //   d_encode<<<blocks, TPB>>>(dpreencdata, dpreencsize, d_encoded, d_encsize, d_fullcarry);
-  //   cudaFree(d_fullcarry);
-  //   cudaDeviceSynchronize();
-  //   CheckCuda(__LINE__);
-  // }
-
-  GPUTimer dtimer;
-  dtimer.start();
   int* d_fullcarry;
   cudaMalloc((void **)&d_fullcarry, chunks * sizeof(int));
   d_reset<<<1, 1>>>();
   cudaMemset(d_fullcarry, 0, chunks * sizeof(int));
-  d_encode_tcms<<<blocks, TPB>>>((uint8_t*)input, (int)insize, d_encoded, d_encsize, d_fullcarry);
-  cudaFree(d_fullcarry);
-  cudaDeviceSynchronize();
+  GPUTimer dtimer;
+  dtimer.start();
+  d_encode_bitr<<<blocks, TPB>>>(input, (int)insize, d_encoded, d_encsize, d_fullcarry);
   *time = (float)dtimer.stop();
+  cudaFree(d_fullcarry);
+  CheckCuda(__LINE__);
+
 
   // get encoded GPU result
   int dencsize = 0;
   cudaMemcpy(&dencsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
-    
-  // Calculate padding needed for 4-byte alignment
-  size_t padding = (8 - (dencsize % 8)) % 8;
-  *tcms_padding_bytes = padding;
   
-  // Round up size to 4-byte alignment
+  // Calculate padding needed for 8-byte alignment
+  size_t padding = (8 - (dencsize % 8)) % 8;
+  *bitr_padding_bytes = padding;
+  
+  // Round up size to 8-byte alignment
   *outsize = (size_t)(dencsize + padding);
   *output = d_encoded;
-  // cudaMemcpy(dencoded, d_encoded, dencsize, cudaMemcpyDeviceToHost);
-  // printf("encoded size: %d bytes\n", dencsize);
+
   CheckCuda(__LINE__);
-
-  // const float CR = (100.0 * dencsize) / insize;
-  // printf("ratio: %6.2f%% %7.3fx\n", CR, 100.0 / CR);
-
-  // if (perf) {
-  //   printf("encoding time: %.6f s\n", runtime);
-  //   double throughput = insize * 0.000000001 / runtime;
-  //   printf("encoding throughput: %8.3f Gbytes/s\n", throughput);
-  //   CheckCuda(__LINE__);
-  // }
-
-  // write to file
-  // FILE* const fout = fopen(argv[2], "wb");
-  // fwrite(dencoded, 1, dencsize, fout);
-  // fclose(fout);
-
-  // // clean up GPU memory
-  // cudaFree(d_input);
-  // cudaFree(d_encoded);
-  // cudaFree(d_encsize);
-  // CheckCuda(__LINE__);
-
-  // // clean up
-  // delete [] input;
-  // cudaFreeHost(dencoded);
-  // return 0;
 }

@@ -42,9 +42,9 @@ typedef struct alignas(128) psz_header {
   double eb;
   uint32_t radius : 16;
   int splen;
-  size_t tcms_padding_bytes;
-  size_t bitr_padding_bytes;
-  
+  // size_t tcms_padding_bytes;
+  // size_t bitr_padding_bytes;
+
   uint32_t entry[END + 2];
 
   psz_predtype pred_type;

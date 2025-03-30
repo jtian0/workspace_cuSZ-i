@@ -36,7 +36,6 @@ URL: The latest version of this code is available at https://github.com/burtsche
 Sponsor: This code is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Research (ASCR), under contract DE-SC0022223.
 */
 
-
 #ifndef NDEBUG
 #define NDEBUG
 #endif
@@ -56,13 +55,13 @@ static const int TPB = 512;  // threads per block [must be power of 2 and at lea
 #include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include "rre/sum_reduction.h"
-#include "rre/max_scan.h"
-#include "rre/prefix_sum.h"
-#include "rre/components/d_BIT_4.h"
-#include "rre/components/d_RRE_2.h"
-#include "rre/components/d_RZE_1.h"
-#include "rre/rre.h"
+#include "lc/sum_reduction.h"
+#include "lc/max_scan.h"
+#include "lc/prefix_sum.h"
+#include "lc/components/d_TCMS_1.h"
+#include "lc/components/d_BIT_1.h"
+#include "lc/components/d_RRE_1.h"
+#include "lc/lc.h"
 
 
 // copy (len) bytes from global memory (source) to shared memory (destination) using separate shared memory buffer (temp)
@@ -133,7 +132,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_decode_bitr(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
+void d_decode_tcms(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -187,13 +186,13 @@ void d_decode_bitr(const byte* const __restrict__ input, byte* const __restrict_
     if (csize < osize) {
       byte* tmp;
      tmp = in; in = out; out = tmp;
-      d_iRZE_1(csize, in, out,temp);
+      d_iRRE_1(csize, in, out,temp);
       __syncthreads();
      tmp = in; in = out; out = tmp;
-      d_iRRE_2(csize, in, out,temp);
+      d_iBIT_1(csize, in, out,temp);
       __syncthreads();
      tmp = in; in = out; out = tmp;
-      d_iBIT_4(csize, in, out,temp);
+      d_iTCMS_1(csize, in, out,temp);
       __syncthreads();
      }
 
@@ -234,38 +233,11 @@ static void CheckCuda(const int line)
 }
 
 
-void BITR_DECOMPRESS(uint8_t* input, void** output, size_t bitr_padding_bytes, float* time)
+void TCMS_DECOMPRESS(uint8_t* input, void** output, float* time)
 { 
   int pre_size;
   cudaMemcpy(&pre_size, input, sizeof(int), cudaMemcpyDeviceToHost);
-  // printf("GPU LC 1.2 Algorithm: BIT_4 RRE_2 RZE_1\n");
-  // printf("Copyright 2024 Texas State University\n\n");
-
-  // // read input from file
-  // if (argc < 3) {printf("USAGE: %s compressed_file_name decompressed_file_name [performance_analysis (y)]\n\n", argv[0]); return -1;}
-
-  // read input file
-  // FILE* const fin = fopen(argv[1], "rb");
-  // int pre_size = 0;
-  // const int pre_val = fread(&pre_size, sizeof(pre_size), 1, fin); assert(pre_val == sizeof(pre_size));
-  // fseek(fin, 0, SEEK_END);
-  // const int hencsize = ftell(fin);  assert(hencsize > 0);
-  // byte* const hencoded = new byte [pre_size];
-  // fseek(fin, 0, SEEK_SET);
-  // const int insize = fread(hencoded, 1, hencsize, fin);  assert(insize == hencsize);
-  // fclose(fin);
-  // printf("encoded size: %d bytes\n", insize);
-
-  // Check if the third argument is "y" to enable performance analysis
-  // char* perf_str = argv[3];
-  // bool perf = false;
-  // if (perf_str != nullptr && strcmp(perf_str, "y") == 0) {
-  //   perf = true;
-  // } else if (perf_str != nullptr && strcmp(perf_str, "y") != 0) {
-  //   fprintf(stderr, "ERROR: Invalid argument. Use 'y' or nothing.\n");
-  //   throw std::runtime_error("LC error");
-  // }
-
+  
   // get GPU info
   cudaSetDevice(0);
   cudaDeviceProp deviceProp;
@@ -277,67 +249,27 @@ void BITR_DECOMPRESS(uint8_t* input, void** output, size_t bitr_padding_bytes, f
   CheckCuda(__LINE__);
 
   // allocate GPU memory
-  // byte* ddecoded;
-  // cudaMallocHost((void **)&ddecoded, pre_size);
-  // byte* d_encoded;
-  // cudaMalloc((void **)&d_encoded, insize);
-  // cudaMemcpy(d_encoded, hencoded, insize, cudaMemcpyHostToDevice);
   byte* d_decoded;
   cudaMalloc((void **)&d_decoded, pre_size);
   int* d_decsize;
   cudaMalloc((void **)&d_decsize, sizeof(int));
   CheckCuda(__LINE__);
 
-
   // warm up
   byte* d_decoded_dummy;
   cudaMalloc((void **)&d_decoded_dummy, pre_size);
   int* d_decsize_dummy;
   cudaMalloc((void **)&d_decsize_dummy, sizeof(int));
-  d_decode_bitr<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
+  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
   cudaFree(d_decoded_dummy);
   cudaFree(d_decsize_dummy);
-  
 
   // time GPU decoding
   GPUTimer dtimer;
-  //int ddecsize = 0;
   dtimer.start();
   d_reset<<<1, 1>>>();
-  d_decode_bitr<<<blocks, TPB>>>(input, d_decoded, d_decsize);
-  //cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
-
-  cudaDeviceSynchronize();
+  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded, d_decsize);
   *time = (float)dtimer.stop();
-  *output = (void*)d_decoded;
-
-  // get decoded GPU result
-  // cudaMemcpy(ddecoded, d_decoded, ddecsize, cudaMemcpyDeviceToHost);
-  // printf("decoded size: %d bytes\n", ddecsize);
-  // CheckCuda(__LINE__);
-
-  // const float CR = (100.0 * insize) / ddecsize;
-  // printf("ratio: %6.2f%% %7.3fx\n", CR, 100.0 / CR);
-
-  // if (perf) {
-  //   printf("decoding time: %.6f s\n", runtime);
-  //   double throughput = ddecsize * 0.000000001 / runtime;
-  //   printf("decoding throughput: %8.3f Gbytes/s\n", throughput);
-  //   CheckCuda(__LINE__);
-  // }
-
-  // write to file
-  // FILE* const fout = fopen(argv[2], "wb");
-  // fwrite(ddecoded, 1, ddecsize, fout);
-  // fclose(fout);
-
-  // // clean up GPU memory
-  // cudaFree(d_encoded);
-  // cudaFree(d_decoded);
-  // cudaFree(d_decsize);
-  // CheckCuda(__LINE__);
-
-  // // clean up
-  // cudaFreeHost(ddecoded);
-  // return 0;
+  CheckCuda(__LINE__);
+  *output = d_decoded;
 }

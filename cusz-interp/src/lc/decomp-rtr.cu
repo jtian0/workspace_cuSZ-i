@@ -36,7 +36,6 @@ URL: The latest version of this code is available at https://github.com/burtsche
 Sponsor: This code is based upon work supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Research (ASCR), under contract DE-SC0022223.
 */
 
-
 #ifndef NDEBUG
 #define NDEBUG
 #endif
@@ -59,9 +58,9 @@ static const int TPB = 512;  // threads per block [must be power of 2 and at lea
 #include "rre/sum_reduction.h"
 #include "rre/max_scan.h"
 #include "rre/prefix_sum.h"
-#include "rre/components/d_TCMS_1.h"
-#include "rre/components/d_BIT_1.h"
-#include "rre/components/d_RRE_1.h"
+#include "rre/d_RRE_4.h"
+#include "rre/d_TCMS_8.h"
+#include "rre/d_RZE_1.h"
 #include "rre/rre.h"
 
 
@@ -133,7 +132,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_decode_tcms(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
+void d_decode(const byte* const __restrict__ input, byte* const __restrict__ output, int* const __restrict__ g_outsize)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -187,13 +186,13 @@ void d_decode_tcms(const byte* const __restrict__ input, byte* const __restrict_
     if (csize < osize) {
       byte* tmp;
      tmp = in; in = out; out = tmp;
-      d_iRRE_1(csize, in, out,temp);
+      d_iRZE_1(csize, in, out,temp);
       __syncthreads();
      tmp = in; in = out; out = tmp;
-      d_iBIT_1(csize, in, out,temp);
+      d_iTCMS_8(csize, in, out,temp);
       __syncthreads();
      tmp = in; in = out; out = tmp;
-      d_iTCMS_1(csize, in, out,temp);
+      d_iRRE_4(csize, in, out,temp);
       __syncthreads();
      }
 
@@ -234,16 +233,8 @@ static void CheckCuda(const int line)
 }
 
 
-void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, float* time)
-{ 
-  int pre_size;
-  cudaMemcpy(&pre_size, input, sizeof(int), cudaMemcpyDeviceToHost);
-  // printf("GPU LC 1.2 Algorithm: TCMS_1 BIT_1 RRE_1\n");
-  // printf("Copyright 2024 Texas State University\n\n");
-
-  // // read input from file
-  // if (argc < 3) {printf("USAGE: %s compressed_file_name decompressed_file_name [performance_analysis (y)]\n\n", argv[0]); return -1;}
-
+void RRE1_DECOMPRESS(uint8_t* input, uint8_t** output, int* pre_size, float* time)
+{
   // read input file
   // FILE* const fin = fopen(argv[1], "rb");
   // int pre_size = 0;
@@ -283,7 +274,7 @@ void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, f
   // cudaMalloc((void **)&d_encoded, insize);
   // cudaMemcpy(d_encoded, hencoded, insize, cudaMemcpyHostToDevice);
   byte* d_decoded;
-  cudaMalloc((void **)&d_decoded, pre_size);
+  cudaMalloc((void **)&d_decoded, *pre_size);
   int* d_decsize;
   cudaMalloc((void **)&d_decsize, sizeof(int));
   CheckCuda(__LINE__);
@@ -291,30 +282,29 @@ void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, f
 
   // warm up
   byte* d_decoded_dummy;
-  cudaMalloc((void **)&d_decoded_dummy, pre_size);
+  cudaMalloc((void **)&d_decoded_dummy, *pre_size);
   int* d_decsize_dummy;
   cudaMalloc((void **)&d_decsize_dummy, sizeof(int));
-  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
+  d_decode<<<blocks, TPB>>>(input, d_decoded_dummy, d_decsize_dummy);
   cudaFree(d_decoded_dummy);
   cudaFree(d_decsize_dummy);
-  
 
   // time GPU decoding
   GPUTimer dtimer;
-  //int ddecsize = 0;
+  // int ddecsize = 0;
   dtimer.start();
   d_reset<<<1, 1>>>();
-  d_decode_tcms<<<blocks, TPB>>>(input, d_decoded, d_decsize);
-  //cudaMemcpy(&ddecsize, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
-
-  cudaDeviceSynchronize();
+  d_decode<<<blocks, TPB>>>(input, d_decoded, d_decsize);
   *time = (float)dtimer.stop();
-  *output = (void*)d_decoded;
+  cudaMemcpy(pre_size, d_decsize, sizeof(int), cudaMemcpyDeviceToHost);
+  *output = d_decoded;
+  cudaDeviceSynchronize();
+  
 
   // get decoded GPU result
   // cudaMemcpy(ddecoded, d_decoded, ddecsize, cudaMemcpyDeviceToHost);
   // printf("decoded size: %d bytes\n", ddecsize);
-  // CheckCuda(__LINE__);
+  CheckCuda(__LINE__);
 
   // const float CR = (100.0 * insize) / ddecsize;
   // printf("ratio: %6.2f%% %7.3fx\n", CR, 100.0 / CR);
@@ -326,7 +316,7 @@ void TCMS_DECOMPRESS(uint8_t* input, void** output, size_t tcms_padding_bytes, f
   //   CheckCuda(__LINE__);
   // }
 
-  // write to file
+  // // write to file
   // FILE* const fout = fopen(argv[2], "wb");
   // fwrite(ddecoded, 1, ddecsize, fout);
   // fclose(fout);

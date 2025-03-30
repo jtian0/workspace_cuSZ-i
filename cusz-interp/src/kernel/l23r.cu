@@ -108,8 +108,6 @@ pszerror psz_comp_l23r(
 
 INIT(f4, u1, false)
 INIT(f4, u1, true)
-INIT(f4, u2, false)
-INIT(f4, u2, true)
 INIT(f4, u4, false)
 INIT(f4, u4, true)
 INIT(f8, u4, false)
