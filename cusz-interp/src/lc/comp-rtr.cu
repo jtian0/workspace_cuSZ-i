@@ -56,14 +56,13 @@ static const int TPB = 512;  // threads per block [must be power of 2 and at lea
 #include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include "rre/sum_reduction.h"
-#include "rre/max_scan.h"
-#include "rre/prefix_sum.h"
-#include "rre/d_RRE_4.h"
-#include "rre/d_TCMS_8.h"
-#include "rre/d_RZE_1.h"
-#include "rre/rre.h"
-
+#include "lc/sum_reduction.h"
+#include "lc/max_scan.h"
+#include "lc/prefix_sum.h"
+#include "lc/components/d_RRE_4.h"
+#include "lc/components/d_TCMS_8.h"
+#include "lc/components/d_RZE_1.h"
+#include "lc/lc.h"
 
 // copy (len) bytes from shared memory (source) to global memory (destination)
 // source must we word aligned
@@ -167,7 +166,7 @@ static __global__ __launch_bounds__(TPB, 3)
 #else
 static __global__ __launch_bounds__(TPB, 2)
 #endif
-void d_encode(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
+void d_encode_rtr(const byte* const __restrict__ input, const int insize, byte* const __restrict__ output, int* const __restrict__ outsize, int* const __restrict__ fullcarry)
 {
   // allocate shared memory buffer
   __shared__ long long chunk [3 * (CS / sizeof(long long))];
@@ -279,7 +278,7 @@ static void CheckCuda(const int line)
 }
 
 
-void RRE1_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, int* outsize, float* time, void * stream)
+void RTR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, float* time, void* stream)
 {
   // get GPU info
   cudaSetDevice(0);
@@ -293,22 +292,11 @@ void RRE1_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, int* outsize
   CheckCuda(__LINE__);
   const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS;
 
-  // allocate GPU memory
-  // byte* dencoded;
-  // cudaMallocHost((void **)&dencoded, maxsize);
-  // byte* d_input;
-  // cudaMalloc((void **)&d_input, insize);
-  // cudaMemcpy(d_input, input, insize, cudaMemcpyHostToDevice);
   byte* d_encoded;
   cudaMalloc((void **)&d_encoded, maxsize);
   int* d_encsize;
   cudaMalloc((void **)&d_encsize, sizeof(int));
   CheckCuda(__LINE__);
-
-  // byte* dpreencdata;
-  // cudaMalloc((void **)&dpreencdata, insize);
-  // cudaMemcpy(dpreencdata, d_input, insize, cudaMemcpyDeviceToDevice);
-  // int dpreencsize = insize;
 
   
   int* d_fullcarry;
@@ -317,42 +305,18 @@ void RRE1_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, int* outsize
   cudaMemset(d_fullcarry, 0, chunks * sizeof(int));
   GPUTimer dtimer;
   dtimer.start();
-  d_encode<<<blocks, TPB>>>(input, (int)insize, d_encoded, d_encsize, d_fullcarry);
-   *time = (float)dtimer.stop();
+  d_encode_rtr<<<blocks, TPB>>>(input, (int)insize, d_encoded, d_encsize, d_fullcarry);
+  *time = (float)dtimer.stop();
   cudaFree(d_fullcarry);
   CheckCuda(__LINE__);
  
 
   // get encoded GPU result
-  // int dencsize = 0;
-  cudaMemcpy(outsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
+  int dencsize = 0;
+  cudaMemcpy(&dencsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
+
+  *outsize = (size_t)(dencsize);
   *output = d_encoded;
-  // printf("encoded size: %d bytes\n", dencsize);
+
   CheckCuda(__LINE__);
-
-  // const float CR = (100.0 * dencsize) / insize;
-  // printf("ratio: %6.2f%% %7.3fx\n", CR, 100.0 / CR);
-
-  // if (perf) {
-  //   printf("encoding time: %.6f s\n", runtime);
-  //   double throughput = insize * 0.000000001 / runtime;
-  //   printf("encoding throughput: %8.3f Gbytes/s\n", throughput);
-  //   CheckCuda(__LINE__);
-  // }
-
-  // // write to file
-  // FILE* const fout = fopen(argv[2], "wb");
-  // fwrite(dencoded, 1, dencsize, fout);
-  // fclose(fout);
-
-  // // clean up GPU memory
-  // cudaFree(d_input);
-  // cudaFree(d_encoded);
-  // cudaFree(d_encsize);
-  // CheckCuda(__LINE__);
-
-  // // clean up
-  // delete [] input;
-  // cudaFreeHost(dencoded);
-  // return 0;
 }

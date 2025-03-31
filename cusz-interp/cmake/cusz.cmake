@@ -127,7 +127,9 @@ target_link_libraries(pszcomp_cu PUBLIC pszcompile_settings pszkernel_cu
 add_library(psztestframe_cu src/pipeline/testframe.cc)
 target_link_libraries(psztestframe_cu PUBLIC pszcomp_cu pszmem pszutils_seq)
 
-add_library(lc src/lc/comp-tcms.cu src/lc/decomp-tcms.cu src/lc/comp-bitr.cu src/lc/decomp-bitr.cu)
+add_library(lc src/lc/comp-tcms.cu src/lc/decomp-tcms.cu 
+            src/lc/comp-bitr.cu src/lc/decomp-bitr.cu
+            src/lc/comp-rtr.cu src/lc/decomp-rtr.cu)
 target_compile_options(lc
   PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:

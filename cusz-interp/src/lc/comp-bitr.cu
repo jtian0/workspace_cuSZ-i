@@ -278,7 +278,7 @@ static void CheckCuda(const int line)
 }
 
 
-void BITR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, size_t* bitr_padding_bytes, float* time, void* stream)
+void BITR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, float* time, void* stream)
 {
   // get GPU info
   cudaSetDevice(0);
@@ -290,7 +290,7 @@ void BITR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outs
   const int blocks = SMs * (mTpSM / TPB);
   const int chunks = (insize + CS - 1) / CS;  // round up
   CheckCuda(__LINE__);
-  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS + 7;
+  const int maxsize = 3 * sizeof(int) + chunks * sizeof(short) + chunks * CS;
 
   byte* d_encoded;
   cudaMalloc((void **)&d_encoded, maxsize);
@@ -315,12 +315,7 @@ void BITR_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outs
   int dencsize = 0;
   cudaMemcpy(&dencsize, d_encsize, sizeof(int), cudaMemcpyDeviceToHost);
   
-  // Calculate padding needed for 8-byte alignment
-  size_t padding = (8 - (dencsize % 8)) % 8;
-  *bitr_padding_bytes = padding;
-  
-  // Round up size to 8-byte alignment
-  *outsize = (size_t)(dencsize + padding);
+  *outsize = (size_t)(dencsize);
   *output = d_encoded;
 
   CheckCuda(__LINE__);

@@ -377,6 +377,16 @@ void pszctx_parse_argv(pszctx* ctx, int const argc, char** const argv)
         auto _ = std::stoi(argv[++i]);
         ctx->intp_param.auto_tuning = (uint8_t)_;
       }
+      else if (optmatch({"-s", "--scheme"})) {
+        check_next();
+        auto _ = std::string(argv[++i]);
+        if (_ == "tp") {
+          ctx->use_huffman = false;
+        }
+        else if (_ == "cr") {
+          ctx->use_huffman = true;
+        }
+      }
 
       else if (optmatch({"--sycl-device"})) {
 #if defined(PSZ_USE_1API)

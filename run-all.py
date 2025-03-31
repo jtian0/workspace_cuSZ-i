@@ -111,6 +111,7 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-l", f"{data_size[0]}x{data_size[1]}x{data_size[2]}",
                     "-z", 
                     "-a", "2",
+                    "-s", "tp",
                     "--predictor", "spline3",
                     "--report", "time,cr"
                     ],

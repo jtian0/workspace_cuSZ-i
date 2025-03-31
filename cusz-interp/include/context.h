@@ -69,6 +69,7 @@ struct psz_context {
   double rel_eb{0.0};
   int dict_size{256}, radius{128};
   int quant_bytewidth{1}, huff_bytewidth{4};
+  bool use_huffman{true};
 
   // spv gather-scatter config, tmp. unused
   float nz_density{0.2};

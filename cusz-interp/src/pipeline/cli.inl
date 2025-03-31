@@ -174,16 +174,10 @@ class CLI {
         ->file(ctx->infile, FromFile)
         ->control({H2D});
 
-    // int size_before_rre1;
-    // memcpy(&size_before_rre1, compressed->hptr(), sizeof(int));
-    // uint8_t* compressed_before_rre1;
-    // float decompress_time_rre1;
-    // RRE1_DECOMPRESS(compressed->dptr(), &compressed_before_rre1, &size_before_rre1, &decompress_time_rre1);
-
     auto header = new psz_header;
     memcpy(header, compressed->hptr(), sizeof(psz_header));
     auto len = psz_utils::uncompressed_len(header);
-    // header->compressed_len = compressed_len;
+    ctx->use_huffman = header->with_huffman;
 
     auto decompressed = new pszmem_cxx<T>(len, 1, 1, "decompressed");
     auto outlier_tmp = new pszmem_cxx<T>(len, 1, 1, "outlier_tmp");

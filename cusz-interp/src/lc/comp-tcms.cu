@@ -278,7 +278,7 @@ static void CheckCuda(const int line)
 }
 
 
-void TCMS_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, size_t* tcms_padding_bytes, float* time, void* stream)
+void TCMS_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outsize, float* time, void* stream)
 {
   // get GPU info
   cudaSetDevice(0);
@@ -317,8 +317,7 @@ void TCMS_COMPRESS(uint8_t* input, size_t insize, uint8_t** output, size_t* outs
     
   // Calculate padding needed for 8-byte alignment
   size_t padding = (8 - (dencsize % 8)) % 8;
-  *tcms_padding_bytes = padding;
-  
+
   // Round up size to 8-byte alignment
   *outsize = (size_t)(dencsize + padding);
   *output = d_encoded;

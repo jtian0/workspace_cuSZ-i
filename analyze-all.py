@@ -416,7 +416,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line and line_number > 0 and "(c) COMPRESSION REPORT" in lines[line_number-6]:
+                        if "(total)" in line and line_number > 0 and ("(c) COMPRESSION REPORT" in lines[line_number-6] or "(c) COMPRESSION REPORT" in lines[line_number-8]):
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -454,9 +454,13 @@ class Analysis:
                         # if "-bitcomp-" in line:
                         #     bitcomp_line_number.append(line_number)
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline_infprecis_data", "cusz::c_spline_profiling_data_2", "d_encode_tcms", "d_encode_bitr", "psz::extrema_kernel"])
+                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline_infprecis_data", "cusz::c_spline_profiling_data_2", "psz::extrema_kernel"
+                                                           "d_encode_tcms", "d_encode_bitr", "d_encode_rtr", 
+                                                           "psz::detail::hf_encode_phase2_deflate", "psz::detail::hf_encode_phase1_fill", "histsp_multiwarp", "psz::detail::hf_encode_phase4_concatenate"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_xTP', self.data_size, ["d_decode_tcms", "d_decode_bitr", "cusz::x_spline_infprecis_data", "psz::extrema_kernel"])
+                          'nsys_cmp_xTP', self.data_size, ["d_decode_tcms", "d_decode_bitr", "d_decode_rtr", 
+                                                           "cusz::x_spline_infprecis_data", "psz::extrema_kernel", 
+                                                           "hf_decode_kernel"])
                     # compressed_size = self.data_size / compression_ratio_value
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
                     # self.analyze_nvcomp(lines[nvcomp_line_number[0]:nvcomp_line_number[1]], df, (eb, data_point), compressed_size)

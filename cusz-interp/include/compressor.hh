@@ -57,7 +57,7 @@ class Compressor {
   // external codec that has standalone internals
   Codec* codec;
 
-  float time_pred, time_hist, time_sp, time_tcms, time_bitr;
+  float time_pred, time_hist, time_sp, time_tcms, time_bitr, time_rtr;
 
   size_t len;
   int splen;
@@ -68,11 +68,12 @@ class Compressor {
 
   BYTE* comp_tcms_out{nullptr};
   size_t comp_tcms_outlen{0};
-  size_t tcms_padding_bytes{0};
 
   BYTE* comp_bitr_out{nullptr};
   size_t comp_bitr_outlen{0};
-  size_t bitr_padding_bytes{0};
+
+  BYTE* comp_rtr_out{nullptr};
+  size_t comp_rtr_outlen{0};
 
   T* device_anchor{nullptr};
 
@@ -107,7 +108,7 @@ class Compressor {
   Compressor* decompress_decode(pszheader*, BYTE*, uninit_stream_t);
   Compressor* decompress_tcms(pszheader*, BYTE*, uninit_stream_t);
   Compressor* decompress_predict(pszheader*, BYTE*, T*, T*, T*, uninit_stream_t);
-  Compressor* decompress_collect_kerneltime();
+  Compressor* decompress_collect_kerneltime(pszheader*);
 
   Compressor* clear_buffer();
   Compressor* dump(std::vector<pszmem_dump>, char const*);

@@ -37,7 +37,7 @@ TESTFRAME::full_decompress(
   cor->decompress_scatter(header, in, d_space, stream);
   cor->decompress_decode(header, in, stream);
   // cor->decompress_predict(header, in, nullptr, d_xdata, d_xdata, stream);
-  cor->decompress_collect_kerneltime();
+  cor->decompress_collect_kerneltime(header);
 }
 
 TESTFRAME::pred_comp_decomp(
