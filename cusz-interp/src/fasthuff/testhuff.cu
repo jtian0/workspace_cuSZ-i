@@ -31,7 +31,7 @@ size_t file_size(std::string filename) {
     return (size_t) (rc == 0 ? stat_buf.st_size : 0);
 }
 
-void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_out_codewords, size_t* out_bytes) {
+void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_out_codewords, size_t* out_bytes, float* time_fasthf) {
     using namespace cusz;
     using T = uint8_t;
     using H = uint32_t;
@@ -56,6 +56,14 @@ void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_ou
 
     uint8_t* d_out;
     size_t out_len;
+    // Create CUDA events for timing
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    
+    // Record start event
+    cudaEventRecord(start);
+    
     codec.encode(
         in_symbols.template get<cusz::LOC::DEVICE>(),
         len,
@@ -65,6 +73,19 @@ void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_ou
         d_out,
         out_len
     );
+    
+    // Record stop event
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    
+    // Calculate elapsed time in milliseconds
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    *time_fasthf = milliseconds;
+    
+    // Destroy CUDA events
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     // Allocate GPU memory for d_out_codewords
     uint8_t* temp_out;
     cudaMalloc((void**)&temp_out, out_len);
@@ -81,7 +102,7 @@ void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_ou
     revbook.template free<cusz::LOC::HOST_DEVICE>();
 }
 
-void huff_decompress(uint8_t* d_in_codewords, size_t in_len, uint8_t* d_out_symbols, size_t len) {
+void huff_decompress(uint8_t* d_in_codewords, size_t in_len, uint8_t* d_out_symbols, size_t len, float* time_fasthf) {
     using namespace cusz;
     using T = uint8_t;
     using H = uint32_t;
@@ -96,10 +117,30 @@ void huff_decompress(uint8_t* d_in_codewords, size_t in_len, uint8_t* d_out_symb
     out_symbols.template alloc<cusz::LOC::DEVICE>();
 
     HuffmanCoarse<T, H> codec;
+    // Create CUDA events for timing
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    
+    // Record start event
+    cudaEventRecord(start);
     codec.decode(
         in_codewords.template get<cusz::LOC::DEVICE>(),
         out_symbols.template get<cusz::LOC::DEVICE>()
     );
+
+    // Record stop event
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    
+    // Calculate elapsed time in milliseconds
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    *time_fasthf = milliseconds;
+    
+    // Destroy CUDA events
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     cudaMemcpy(d_out_symbols, out_symbols.template get<cusz::LOC::DEVICE>(), len, cudaMemcpyDeviceToHost);
 

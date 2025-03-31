@@ -1,2 +1,2 @@
-void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_out_codewords, size_t* out_len);
-void huff_decompress(uint8_t* d_in_codewords, size_t in_len, uint8_t* d_out_symbols, size_t len);
+void huff_compress(uint8_t* d_in_symbols, int n_syms, size_t len, uint8_t** d_out_codewords, size_t* out_len, float* time_fasthf);
+void huff_decompress(uint8_t* d_in_codewords, size_t in_len, uint8_t* d_out_symbols, size_t len, float* time_fasthf);

@@ -57,7 +57,7 @@ class Compressor {
   // external codec that has standalone internals
   Codec* codec;
 
-  float time_pred, time_hist, time_sp, time_rre1;
+  float time_pred, time_hist, time_sp, time_rre1, time_fasthf;
 
   size_t len;
   int splen;

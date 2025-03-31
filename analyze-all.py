@@ -414,7 +414,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line and line_number > 0 and "(subtotal)" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "fasthf" in lines[line_number-2]:
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -433,7 +433,7 @@ class Analysis:
                             compression_ratio_value = float(line_split[index])
                             df.loc[(eb, data_point), 'CR'] = compression_ratio_value
                             df.loc[(eb, data_point), 'BR'] = 32.0 / compression_ratio_value
-                        if "(total)" in line and line_number > 0 and "rre1" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "predict" in lines[line_number-2]:
                             index = line_split.index("(total)") + 2
                             decompression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_xTP'] = decompression_throughput

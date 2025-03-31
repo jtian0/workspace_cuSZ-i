@@ -241,9 +241,9 @@ struct TimeRecordViewer {
           reflow.push_back(i);
         }
       }
-      reflow.push_back({const_cast<const char*>("(subtotal)"), subtotal_time});
-      printf("\e[2m");
-      reflow.push_back(book_tuple);
+      // reflow.push_back({const_cast<const char*>("(subtotal)"), subtotal_time});
+      // printf("\e[2m");
+      // reflow.push_back(book_tuple);
       reflow.push_back({const_cast<const char*>("(total)"), total_time});
       printf("\e[0m");
     }

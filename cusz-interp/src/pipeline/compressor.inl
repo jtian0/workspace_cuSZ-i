@@ -159,7 +159,7 @@ COR::compress_encode(pszctx* ctx, void* stream)
 
   /* Huffman encoding */
   {
-    huff_compress(mem->ectrl(), booklen, len, &comp_hf_out, &comp_hf_outlen);
+    huff_compress(mem->ectrl(), booklen, len, &comp_hf_out, &comp_hf_outlen, &time_fasthf);
     // printf("Compressed length: %zu bytes\n", comp_hf_outlen);
     // printf("Compressed length is 4-byte aligned: %s\n", (comp_hf_outlen % 4 == 0) ? "Yes" : "No");
     // if (comp_hf_out == nullptr) {
@@ -425,7 +425,7 @@ COR::decompress_decode(pszheader* header, BYTE* in, uninit_stream_t stream)
   auto access = [&](int FIELD, szt offset_nbyte = 0) {
     return (void*)(in + header->entry[FIELD] + offset_nbyte);
   };
-  huff_decompress((B*)access(Header::VLE), header->entry[Header::VLE+1] - header->entry[Header::VLE], mem->ectrl(), len);
+  huff_decompress((B*)access(Header::VLE), header->entry[Header::VLE+1] - header->entry[Header::VLE], mem->ectrl(), len, &time_fasthf);
   //codec->decode((B*)access(Header::VLE), mem->ectrl(), stream);
   return this;
 }
@@ -501,6 +501,7 @@ COR::compress_collect_kerneltime()
   if (not timerecord.empty()) timerecord.clear();
 
   COLLECT_TIME("predict", time_pred);
+  COLLECT_TIME("fasthf", time_fasthf);
   // COLLECT_TIME("histogram", time_hist);
   // COLLECT_TIME("book", codec->time_book());
   // COLLECT_TIME("huff-enc", codec->time_lossless());
@@ -515,6 +516,7 @@ COR::decompress_collect_kerneltime()
   if (not timerecord.empty()) timerecord.clear();
 
   COLLECT_TIME("outlier", time_sp);
+  COLLECT_TIME("fasthf", time_fasthf);
   // COLLECT_TIME("huff-dec", codec->time_lossless());
   COLLECT_TIME("predict", time_pred);
 
