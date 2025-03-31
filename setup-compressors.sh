@@ -10,7 +10,7 @@ echo "\n${BOLDRED}setting up stock cuSZ and cuSZ-i (this work)...${GRAY}"
 cmake -S cusz-interp -B cusz-interp/build \
     -D PSZ_BACKEND=cuda \
     -D PSZ_BUILD_EXAMPLES=off \
-    -D CMAKE_CUDA_ARCHITECTURES="75;80;86" \
+    -D CMAKE_CUDA_ARCHITECTURES="75;80;86;89" \
     -D CMAKE_BUILD_TYPE=Release 
 cmake --build cusz-interp/build -- -j
 

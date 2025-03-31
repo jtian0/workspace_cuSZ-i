@@ -414,7 +414,7 @@ class Analysis:
                     for line_number, line in enumerate(lines):
                         line_split = line.split()
                         # compression
-                        if "(total)" in line and line_number > 0 and "book" in lines[line_number-1]:
+                        if "(total)" in line and line_number > 0 and "(subtotal)" in lines[line_number-1]:
                             index = line_split.index("(total)") + 2
                             compression_throughput = float(line_split[index])
                             df.loc[(eb, data_point), 'cmp_cTP'] = compression_throughput
@@ -449,11 +449,9 @@ class Analysis:
                             compareDATA_line_number.append(line_number)
 
                     self.analyze_nsys(lines[nsys_comp_line_number[0]:nsys_comp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_16x16x16data", "psz::detail::hf_encode_phase2_deflate", 
-                                        "histsp_multiwarp", "psz::detail::hf_encode_phase1_fill", "psz::extrema_kernel", "psz::detail::hf_encode_phase4_concatenate",
-                                        "d_encode", "cusz::c_spline3d_profiling_data_2"])
+                          'nsys_cmp_cTP', self.data_size, ["cusz::c_spline3d_infprecis_16x16x16data", "par_huffman::GPU_GenerateCL", "cusz::coarse_par::detail::kernel::huffman_encode_deflate", "kernel::p2013Histogram", "cusz::coarse_par::detail::kernel::huffman_encode_fixedlen_gridstride", "par_huffman::GPU_GenerateCW", "psz::extrema_kernel", "cusz::huffman_coarse_concatenate", "d_encode", "cusz::c_spline3d_profiling_data_2", "par_huffman::detail::GPU_GetFirstNonzeroIndex", "par_huffman::detail::GPU_GetMaxCWLength", "par_huffman::detail::GPU_ReverseArray", "par_huffman::detail::GPU_ReorderByIndex", "par_huffman::detail::GPU_FillArraySequence"])
                     self.analyze_nsys(lines[nsys_decomp_line_number[0]:nsys_decomp_line_number[1]], df, (eb, data_point), 
-                          'nsys_cmp_xTP', self.data_size, ["hf_decode_kernel", 
+                          'nsys_cmp_xTP', self.data_size, ["cusz::coarse_par::detail::kernel::huffman_decode_new", 
                                         "cusz::x_spline3d_infprecis_16x16x16data", "psz::extrema_kernel", "d_decode"])
                     self.analyze_compareData(lines[compareDATA_line_number[0]:compareDATA_line_number[1]], df, (eb, data_point))
 

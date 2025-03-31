@@ -103,7 +103,8 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
         ]
     elif cmp == "cuSZi":
         cmd = [
-                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
+                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "--force-overwrite", "true", 
+                 "cuszi", 
                     "-t", "f32",
                     "-m", "r2r",
                     "-i", data_path,
@@ -114,7 +115,8 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "--predictor", "spline3",
                     "--report", "time,cr"
                     ],
-                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
+                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "--force-overwrite", "true", 
+                    "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
                     "--report", "time",
