@@ -145,14 +145,32 @@ class CLI {
         compressor, input->dptr(), uncomp_len, &compressed, &compressed_len,
         &header, (void*)&timerecord, stream);
 
-    printf("\n(c) COMPRESSION REPORT\n");
+    // printf("\n(c) COMPRESSION REPORT\n");
 
-    if (ctx->report_time)
-      psz::TimeRecordViewer::view_timerecord(&timerecord, &header);
-    if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
+    // if (ctx->report_time)
+    //   psz::TimeRecordViewer::view_timerecord(&timerecord, &header);
+    // if (ctx->report_cr) psz::TimeRecordViewer::view_cr(&header);
 
+    // Convert relative error bound to scientific notation (e.g., 1e-5)
+    std::ostringstream eb_str;
+    int exponent = 0;
+    double mantissa = ctx->rel_eb;
+    
+    // Find the exponent and mantissa for scientific notation
+    while (mantissa < 1.0 && mantissa > 0.0) {
+      mantissa *= 10.0;
+      exponent--;
+    }
+    while (mantissa >= 10.0) {
+      mantissa /= 10.0;
+      exponent++;
+    }
+    
+    // Format as integer mantissa and exponent (e.g., 1e-5)
+    eb_str << static_cast<int>(mantissa) << "e" << exponent;
+    
     write_compressed_to_disk(
-        std::string(ctx->infile) + ".cusza", compressed, compressed_len);
+        std::string(ctx->infile) + "." + eb_str.str() + ".quant_u1", compressed, compressed_len);
 
     delete input;
   }

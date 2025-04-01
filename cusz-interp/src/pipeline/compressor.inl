@@ -218,8 +218,8 @@ COR::compress_tcms(pszctx* ctx, void* stream)
 COR::compress_wrapup(BYTE** out, szt* outlen)
 {
   /* output of this function */
-  *out = mem->_compressed->dptr();
-  *outlen = header.entry[Header::END+1];
+  *out = mem->ectrl();
+  *outlen = len;
   mem->_compressed->m->len = *outlen;
   mem->_compressed->m->bytes = *outlen;
 
@@ -233,17 +233,17 @@ COR::compress(pszctx* ctx, T* in, BYTE** out, size_t* outlen, void* stream)
   PSZSANITIZE_PSZCTX(ctx);
 
   compress_predict(ctx, in, stream);
-  if (ctx->use_huffman) {
-    compress_histogram(ctx, stream);
-    compress_encode(ctx, stream);
-  }
-  else {
-    compress_tcms(ctx, stream);
-  }
-  compress_merge(ctx, stream);
-  compress_update_header(ctx, stream);
+  // if (ctx->use_huffman) {
+  //   compress_histogram(ctx, stream);
+  //   compress_encode(ctx, stream);
+  // }
+  // else {
+  //   compress_tcms(ctx, stream);
+  // }
+  // compress_merge(ctx, stream);
+  // compress_update_header(ctx, stream);
   compress_wrapup(out, outlen);
-  compress_collect_kerneltime();
+  // compress_collect_kerneltime();
 
   return this;
 }

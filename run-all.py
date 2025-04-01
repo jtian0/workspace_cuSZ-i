@@ -103,7 +103,8 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
         ]
     elif cmp == "cuSZi":
         cmd = [
-                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
+                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "--force-overwrite", "true", 
+                    "cuszi", 
                     "-t", "f32",
                     "-m", "r2r",
                     "-i", data_path,
@@ -111,11 +112,11 @@ def update_command(cmp, data_path, data_size, error_bound="1e-2", bit_rate="2", 
                     "-l", f"{data_size[0]}x{data_size[1]}x{data_size[2]}",
                     "-z", 
                     "-a", "2",
-                    "-s", "tp",
                     "--predictor", "spline3",
                     "--report", "time,cr"
                     ],
-                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "cuszi", 
+                ["nsys", "profile",  "--stats=true", "-o", nsys_result_path, "--force-overwrite", "true", 
+                    "cuszi", 
                     "-i", data_path+".cusza",
                     "-x",
                     "--report", "time",
@@ -165,21 +166,21 @@ def run_FZGPU(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
 
 def run_cuSZ(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
     result = subprocess.run(command[0], capture_output=True, text=True)
-    decomp_result = subprocess.run(command[1], capture_output=True, text=True)
-    qcat_result = subprocess.run(command[2], capture_output=True, text=True)
+    # decomp_result = subprocess.run(command[1], capture_output=True, text=True)
+    # qcat_result = subprocess.run(command[2], capture_output=True, text=True)
     # nvcomp = copy.deepcopy(bitcomp_cmd_nv)
     # nvcomp[-3] += '.cusza'
     # bitcomp = copy.deepcopy(bitcomp_cmd)
     # bitcomp[-1] += '.cusza'
     # nvcomp_result = subprocess.run(nvcomp, capture_output=True, text=True)
     # bitcomp_result = subprocess.run(bitcomp, capture_output=True, text=True)
-    with open(file_path, 'w') as file:
-        file.write("-cusz_compress-\n" + result.stdout + result.stderr + "-cusz_compress-\n" + 
-                   "-cusz_decompress-\n" + decomp_result.stdout + decomp_result.stderr + "-cusz_decompress-\n" + 
-                #    "-nvcomp-\n" + nvcomp_result.stdout + nvcomp_result.stderr + "-nvcomp-\n" + 
-                #    "-bitcomp-\n" + bitcomp_result.stdout + bitcomp_result.stderr + "-bitcomp-\n" +
-                   "-compareData-\n" + qcat_result.stdout + qcat_result.stderr + '-compareData-\n')
-    result = subprocess.run(command[-1], capture_output=True, text=True)
+    # with open(file_path, 'w') as file:
+    #     file.write("-cusz_compress-\n" + result.stdout + result.stderr + "-cusz_compress-\n" + 
+    #                "-cusz_decompress-\n" + decomp_result.stdout + decomp_result.stderr + "-cusz_decompress-\n" + 
+    #             #    "-nvcomp-\n" + nvcomp_result.stdout + nvcomp_result.stderr + "-nvcomp-\n" + 
+    #             #    "-bitcomp-\n" + bitcomp_result.stdout + bitcomp_result.stderr + "-bitcomp-\n" +
+    #                "-compareData-\n" + qcat_result.stdout + qcat_result.stderr + '-compareData-\n')
+    # result = subprocess.run(command[-1], capture_output=True, text=True)
 
 def run_cuSZp(command, bitcomp_cmd_nv, bitcomp_cmd, file_path):
     result = subprocess.run(command[0], capture_output=True, text=True)
