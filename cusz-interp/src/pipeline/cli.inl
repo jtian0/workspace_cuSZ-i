@@ -170,7 +170,7 @@ class CLI {
     eb_str << static_cast<int>(mantissa) << "e" << exponent;
     
     write_compressed_to_disk(
-        std::string(ctx->infile) + "." + eb_str.str() + ".quant_u1", compressed, compressed_len);
+        std::string(ctx->infile) + "." + eb_str.str() + ".hfquant", compressed, compressed_len);
 
     delete input;
   }
