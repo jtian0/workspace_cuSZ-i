@@ -1,6 +1,30 @@
 [submodule "cusz-interp"]
 	path = cusz-interp
 	url = https://github.com/JLiu-1/cusz-I.git
+	branch = cuSZ-Hi
+[submodule "cusz"]
+	path = cusz
+	url = https://github.com/JLiu-1/cusz-I.git
+	branch = nightly 
+[submodule "cusz_24_2d"]
+	path = cusz_24_2d
+	url = https://github.com/shixun404/cusz-I.git
+	branch = cuszi_24_2d
+[submodule "cusz-interp_16_4steps"]
+	path = cusz-interp_16_4steps
+	url = https://github.com/JLiu-1/cusz-I.git
+	branch = interp_16_4steps 
+
+[submodule "cusz-interp_16_4steps_reorder"]
+	path = cusz-interp_16_4steps_reorder
+	url = https://github.com/JLiu-1/cusz-I.git
+	branch = interp_16_4steps_reorder 
+
+[submodule "cusz-interp_16_4steps_reorder_att_balance"]
+	path = cusz-interp_16_4steps_reorder_att_balance
+	url = https://github.com/JLiu-1/cusz-I.git
+	branch = interp_16_4steps_reorder_att_balance
+
 [submodule "fzgpu"]
 	path = fzgpu
 	url = https://github.com/shixun404/FZ-GPU.git
@@ -10,6 +34,7 @@
 [submodule "cuszp"]
 	path = cuszp
 	url = https://github.com/shixun404/cuSZp
+	branch = master
 [submodule "cuzfp"]
 	path = zfp-cuda_upstream
 	url = https://github.com/LLNL/zfp.git
